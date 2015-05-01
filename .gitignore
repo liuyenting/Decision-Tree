@@ -13,4 +13,6 @@ dat/*
 *.pch
 
 # Executables
+bin/
+bin/*
 *.out
