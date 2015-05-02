@@ -103,12 +103,12 @@ namespace dtree
 
 	class confusion_matrix
 	{
-	protected:
+	public:
 		std::vector<dtree::raw_entry> entries;
 		std::map<int, std::vector<int> > thresholds;
 
 		double confusion = 0.0;
-		int positive_entries, negative_entries;
+		int positive_counts, negative_counts;
 		int min_index, max_index;
 
 	public:
@@ -123,11 +123,13 @@ namespace dtree
 			{
 				entries.push_back(raw_entry(input));
 			}
+			update_thresholds();
 		}
 
 		confusion_matrix(std::vector<dtree::raw_entry> new_entries)
 		{
 			entries = new_entries;
+			update_thresholds();
 		}
 
 	public:
@@ -135,6 +137,33 @@ namespace dtree
 		{
 			update_confusion();
 			return confusion;
+		}
+
+		int find_lowest_confusion(int index)
+		{
+			double lowest = 0.0;
+			for (auto itr = thresholds.at(index).begin();
+			        itr != thresholds.at(index).end();
+			        ++itr)
+			{
+				std::vector<dtree::entries> positive_entries;
+				std::vector<dtree::entries> negative_entries;
+				separate(index, *itr, positive_entries, negative_entries);
+
+				// Calculate the confusion and compare it with the lowest 
+			}
+		}
+
+		void separate(int index, int threshold, std::vector<dtree::entries>& pos, std::vector<dtree:entries>& neg)
+		{
+			std::vector<dtree::raw_entry> tmp;
+			for(auto itr = entries.begin(); itr != entries.end(); ++itr)
+			{
+				if((*itr)[index] >= threshold)
+					pos.push_back(*itr);
+				else
+					neg.push_back(*itr);
+			}
 		}
 
 	private:
@@ -187,23 +216,23 @@ namespace dtree
 		void update_confusion()
 		{
 			double totalentries = entries.size();
-			positive_entries = negative_entries = 0;
+			positive_counts = negative_counts = 0;
 
 			for (auto itr = entries.begin(); itr != entries.end(); ++itr)
 			{
 				if (itr->get_label() == 1)
 				{
-					positive_entries++;
+					positive_counts++;
 				}
 				else if (itr->get_label() == -1)
 				{
-					negative_entries++;
+					negative_counts++;
 				}
 			}
 
 			confusion = 1 -
-			            (positive_entries / totalentries) * (positive_entries / totalentries) -
-			            (negative_entries / totalentries) * (negative_entries / totalentries);
+			            (positive_counts / totalentries) * (positive_counts / totalentries) -
+			            (negative_counts / totalentries) * (negative_counts / totalentries);
 		}
 
 		friend std::ostream& operator<<(std::ostream &stream, confusion_matrix& m)     //output
@@ -257,7 +286,7 @@ namespace dtree
 			{
 				root = new node;
 				root->key_value = key;
-				root-> positive = root->negative = NULL;
+				root->positive = root->negative = NULL;
 			}
 		}
 
@@ -341,10 +370,8 @@ namespace dtree
 	class if_tree
 	{
 		/*
-		 * Threshold won't hold the condition for equals. Aka
-		 * entry[index] > threshold  OR  entry[index] < threshold
-		 *
-		 * When positive and negative are NULL, index holds the final decision.
+		 * entry[index] >= threshold
+		 * When positive and negative are NULL, 'threshold' holds the final decision.
 		 */
 		struct node
 		{
@@ -354,7 +381,7 @@ namespace dtree
 		};
 
 	private:
-		node* root;
+		node* root, current;
 		double epsilon = -1;
 
 	protected:
@@ -399,11 +426,18 @@ namespace dtree
 				throw std::overflow_error("predict(): Epsilon should range between 0 and 1 only.");
 			}
 
-			if(matrix.get_confusion() <= epsilon)
+			if (matrix.get_confusion() <= epsilon)
 			{
 				// Build and return a leaf node with the associated final decision
-
+				current = new node;
+				current->threshold = ;// Final state
+				current->positive = current->negative = NULL;
 			}
+			else
+			{
+				// Cycle through the features
+				for (int idx = matrix.)
+				}
 		}
 
 		void generate_file(std::string path)
@@ -429,6 +463,11 @@ namespace dtree
 				destroy_tree(leaf->negative);
 				delete leaf;
 			}
+		}
+
+		void generate_file(node *leaf)
+		{
+			// Using recursive to generate the if-else structure
 		}
 	};
 }
