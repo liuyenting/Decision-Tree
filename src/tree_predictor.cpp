@@ -17,20 +17,11 @@ int main(int argc, char *argv[])
 	std::cout << "Input from: \"" << argv[1] << "\"..." << std::endl;
 
 	std::ifstream stream(argv[1]);
-
-	std::vector<dtree::raw_entry> rules;
-	std::string input;
-	while (std::getline(stream, input))
-	{
-		rules.push_back(dtree::raw_entry(input));
-	}
+	dtree::confusion_matrix matrix(stream);
+	dtree::if_tree prediction(matrix);
 
 	std::cout << "Review the rules" << std::endl;
-	for(dtree::raw_entry rule : rules)
-	{
-		std::cout << rule;
-	}
-	std::cout << std::endl;
+	std::cout << matrix << std::endl;
 
 	return EXIT_SUCCESS;
 }

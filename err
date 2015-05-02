@@ -1,0 +1,30 @@
+'obj/' wiped...
+'bin/' wiped...
+Compiling src/tree_predictor.cpp...
+In file included from src/tree_predictor.cpp:6:
+src/tree_pred_func.hpp:129:3: error: constructor for 'dtree::if_tree' must explicitly initialize the reference member 'matrix'
+                if_tree(confusion_matrix& new_matrix)
+                ^
+src/tree_pred_func.hpp:126:21: note: declared here
+                confusion_matrix& matrix;
+                                  ^
+src/tree_pred_func.hpp:131:11: error: no viable overloaded '='
+                        matrix = new_matrix;
+                        ~~~~~~ ^ ~~~~~~~~~~
+src/tree_pred_func.hpp:131:11: note: type 'dtree::confusion_matrix' is incomplete
+                        matrix = new_matrix;
+                        ~~~~~~ ^ ~~~~~~~~~~
+src/tree_pred_func.hpp:137:3: error: constructor for 'dtree::if_tree' must explicitly initialize the reference member 'matrix'
+                if_tree(std::ifstream& stream)
+                ^
+src/tree_pred_func.hpp:126:21: note: declared here
+                confusion_matrix& matrix;
+                                  ^
+src/tree_pred_func.hpp:139:13: error: 'dtree::confusion_matrix' is an incomplete type
+                        matrix = confusion_matrix(stream);
+                                 ^
+src/tree_pred_func.hpp:104:8: note: forward declaration of 'dtree::confusion_matrix'
+        class confusion_matrix;
+              ^
+4 errors generated.
+make: *** [obj/tree_predictor.o] Error 1
