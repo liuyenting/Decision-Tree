@@ -133,12 +133,18 @@ namespace dtree
 		}
 
 	public:
+		/*
+		 * Get the confusion of currently stored entries.
+		 */
 		double get_confusion()
 		{
 			update_confusion();
 			return confusion;
 		}
 
+		/* 
+		 * Returns the index of the threshold value.
+		 */
 		int find_lowest_confusion(int index)
 		{
 			double lowest = 0.0;
@@ -154,6 +160,9 @@ namespace dtree
 			}
 		}
 
+		/*
+		 * Separate the entries into two parts, according to the lowest confusion upon the desired feature.
+		 */
 		void separate(int index, int threshold, std::vector<dtree::entries>& pos, std::vector<dtree:entries>& neg)
 		{
 			std::vector<dtree::raw_entry> tmp;
@@ -167,6 +176,9 @@ namespace dtree
 		}
 
 	private:
+		/*
+		 * Update the threshold sequence of each features.
+		 */
 		void update_thresholds()
 		{
 			// Find out the range of indices in the matrix
@@ -213,6 +225,9 @@ namespace dtree
 			}
 		}
 
+		/*
+		 * Calculate current confusion according to the labels.
+		 */
 		void update_confusion()
 		{
 			double totalentries = entries.size();
@@ -445,7 +460,7 @@ namespace dtree
 			std::ofstream stream(path + "tree_pred_func.cpp", std::ios::out);
 
 			stream << "int tree_predict(double *attr) {" << std::endl;
-
+			// TODO: Call generate_file(node* leaf) to recursively generate the if-else statements.
 			stream << "}" << std::endl;
 		}
 
@@ -467,7 +482,6 @@ namespace dtree
 
 		void generate_file(node *leaf)
 		{
-			// Using recursive to generate the if-else structure
 		}
 	};
 }
