@@ -17,11 +17,15 @@ int main(int argc, char *argv[])
 	std::cout << "Input from: \"" << argv[1] << "\"..." << std::endl;
 
 	std::ifstream stream(argv[1]);
-	dtree::confusion_matrix matrix(stream);
-	dtree::if_tree prediction(matrix);
+	dtree::dataset matrix(stream);
 
 	std::cout << "Review the rules" << std::endl;
 	std::cout << matrix << std::endl;
+
+	dtree::dataset pos, neg;
+	int idx = 4;
+	std::cout << "Separate the dataset using feature \"" << idx << "\"" << std::endl;
+	matrix.separate(idx, pos, neg);
 
 	return EXIT_SUCCESS;
 }

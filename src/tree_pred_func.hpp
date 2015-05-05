@@ -2,75 +2,78 @@
 #define TREE_PRED_FUNC_H
 
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <string>
 #include <vector>
 #include <set>
 #include <map>
 #include <sstream>
+#include <cmath>
+#include <cstdlib>
 
 namespace dtree
 {
-	class raw_entry
+	class dataset
 	{
-	protected:
-		int label = 0;
-		std::map<int, int> record;
+		/*
+		 * ((feature, data), conclusion)
+		 */
+		struct entry
+		{
+			std::map<int, int> features;
+			int conclusion;
 
-		int min_index = 0, max_index = 0;
+			entry() : conclusion(0)
+			{
+			}
+		};
 
+	private:
+		std::vector<entry> _data;
+		double confusion;
+
+		/*
+		 * Constructors
+		 */
 	public:
-		raw_entry()
+		dataset()
 		{
 		}
 
-		raw_entry(std::string& input)
+		dataset(std::ifstream& input)
 		{
+			std::string tmp;
+			while (std::getline(input, tmp))
+			{
+				_data.push_back(libsvm_parser(tmp));
+			}
+			update_confusion();
+		}
+
+		/*
+		 * Parser for LIBSVM format, and its helper functions.
+		 */
+	private:
+		entry libsvm_parser(std::string& input)
+		{
+			entry new_entry;
 			for (std::string element : split(input, ' '))
 			{
-				if (label == 0)
+				if (new_entry.conclusion == 0)
 				{
-					label = std::stoi(element);
+					// Set the l
+					new_entry.conclusion = std::stoi(element);
 				}
 				else
 				{
-					std::vector<std::string> tmp = split(element, ':');
-					int index = std::stoi(tmp[0]);
-					record.insert(std::make_pair(index, std::stoi(tmp[1])));
-
-					if (index < min_index)
-					{
-						min_index = index;
-					}
-					else if (index > max_index)
-					{
-						max_index = index;
-					}
+					auto tmp = split(element, ':');
+					new_entry.features.insert(std::make_pair(std::stoi(tmp[0]), std::stoi(tmp[1])));
 				}
 			}
+			return new_entry;
 		}
 
-	public:
-		int get_label()
-		{
-			if (label == 0)
-			{
-				throw std::domain_error("get_label(): Undefined label found during the retrieval.");
-			}
-			return label;
-		}
-
-		const std::pair<int, int> get_index_range() const
-		{
-			return std::make_pair(min_index, max_index);
-		}
-
-		const int& operator[](int index) const
-		{
-			return record.at(index);
-		}
-
-	private:
 		std::vector<std::string>& split(const std::string &input, char delim, std::vector<std::string>& elements)
 		{
 			std::stringstream stream(input);
@@ -89,401 +92,144 @@ namespace dtree
 			return elements;
 		}
 
-		friend std::ostream& operator<<(std::ostream &stream, raw_entry& r)     //output
-		{
-			stream << r.label << " [ ";
-			for (auto itr = r.record.begin(); itr != r.record.end(); ++itr)
-			{
-				stream << itr->first << '(' << itr->second << ')' << ' ';
-			}
-			stream << " ]" << std::endl;
-			return stream;
-		}
-	};
-
-	class confusion_matrix
-	{
-	public:
-		std::vector<dtree::raw_entry> entries;
-		std::map<int, std::vector<int> > thresholds;
-
-		double confusion = 0.0;
-		int positive_counts, negative_counts;
-		int min_index, max_index;
-
-	public:
-		confusion_matrix()
-		{
-		}
-
-		confusion_matrix(std::ifstream& stream)
-		{
-			std::string input;
-			while (std::getline(stream, input))
-			{
-				entries.push_back(raw_entry(input));
-			}
-			update_thresholds();
-		}
-
-		confusion_matrix(std::vector<dtree::raw_entry> new_entries)
-		{
-			entries = new_entries;
-			update_thresholds();
-		}
-
-	public:
 		/*
-		 * Get the confusion of currently stored entries.
+		 * Confusion related operations for current dataset.
 		 */
-		double get_confusion()
-		{
-			update_confusion();
-			return confusion;
-		}
-
-		/* 
-		 * Returns the index of the threshold value.
-		 */
-		int find_lowest_confusion(int index)
-		{
-			double lowest = 0.0;
-			for (auto itr = thresholds.at(index).begin();
-			        itr != thresholds.at(index).end();
-			        ++itr)
-			{
-				std::vector<dtree::entries> positive_entries;
-				std::vector<dtree::entries> negative_entries;
-				separate(index, *itr, positive_entries, negative_entries);
-
-				// Calculate the confusion and compare it with the lowest 
-			}
-		}
-
-		/*
-		 * Separate the entries into two parts, according to the lowest confusion upon the desired feature.
-		 */
-		void separate(int index, int threshold, std::vector<dtree::entries>& pos, std::vector<dtree:entries>& neg)
-		{
-			std::vector<dtree::raw_entry> tmp;
-			for(auto itr = entries.begin(); itr != entries.end(); ++itr)
-			{
-				if((*itr)[index] >= threshold)
-					pos.push_back(*itr);
-				else
-					neg.push_back(*itr);
-			}
-		}
-
 	private:
-		/*
-		 * Update the threshold sequence of each features.
-		 */
-		void update_thresholds()
-		{
-			// Find out the range of indices in the matrix
-			min_index = max_index = 0;
-			for (auto itr = entries.begin(); itr != entries.end(); ++itr)
-			{
-				auto range = itr->get_index_range();
-				if (range.first < min_index)
-				{
-					min_index = range.first;
-				}
-				else if (range.second > max_index)
-				{
-					max_index = range.second;
-				}
-			}
-
-			// Finding the thresholds upon each index
-			thresholds.clear();
-			for (int idx = min_index; idx <= max_index; idx++)
-			{
-				// List all the unduplicate points
-				std::set<int> pts;
-				for (auto itr = entries.begin(); itr != entries.end(); ++itr)
-				{
-					pts.insert((*itr)[idx]);
-				}
-
-				// Calculate the midpoints
-				std::vector<int> mids;
-				for (auto itr = pts.begin(); ; ++itr)
-				{
-					int current = *itr;
-					std::advance(itr, 1);
-					if (itr == pts.end())
-					{
-						break;
-					}
-					else
-					{
-						mids.push_back((current + *itr) / 2);
-					}
-				}
-			}
-		}
-
-		/*
-		 * Calculate current confusion according to the labels.
-		 */
 		void update_confusion()
 		{
-			double totalentries = entries.size();
-			positive_counts = negative_counts = 0;
+			// Reset the confusion
+			confusion = 1;
 
-			for (auto itr = entries.begin(); itr != entries.end(); ++itr)
+			int pos_counts = 0, neg_counts = 0;
+			for (const auto& entry : _data)
 			{
-				if (itr->get_label() == 1)
+				if (entry.conclusion > 0)
 				{
-					positive_counts++;
+					pos_counts++;
 				}
-				else if (itr->get_label() == -1)
+				else if (entry.conclusion < 0)
 				{
-					negative_counts++;
+					neg_counts++;
+				}
+				else
+				{
+					throw std::domain_error("update_confusion(): Undefined conclusion found during the refresh.");
+					std::exit(EXIT_FAILURE);
 				}
 			}
 
-			confusion = 1 -
-			            (positive_counts / totalentries) * (positive_counts / totalentries) -
-			            (negative_counts / totalentries) * (negative_counts / totalentries);
+			confusion -= std::pow((pos_counts / (double)_data.size()), 2) + std::pow((neg_counts / (double)_data.size()), 2);
 		}
 
-		friend std::ostream& operator<<(std::ostream &stream, confusion_matrix& m)     //output
+		/*
+		 * Branching operations and corresponding support functions.
+		 */
+	public:
+		bool can_branch()
 		{
-			for (dtree::raw_entry r : m.entries)
+			if (_data.size() > 1)
 			{
-				stream << r;
+				return true;
+			}
+		}
+
+		/*
+		 * Separate the dataset into two according to the lowest confusion value in designated feature.
+		 */
+		void separate(int feature_index, dataset& pos, dataset& neg)
+		{
+			std::set<int> values;
+			for (const auto& e : _data)
+			{
+				try
+				{
+					values.insert(e.features.at(feature_index));
+				}
+				catch (std::out_of_range e)
+				{
+				}
 			}
 
+			if(values.size() == 0)
+			{
+				throw std::out_of_range("separate(): Feature index out-of-range.");
+				std::exit(EXIT_FAILURE);
+			}
+
+			std::set<double> thresholds;
+			for (auto itr = values.begin(); ;)
+			{
+				double a = *itr, b;
+				if (++itr == values.end())
+				{
+					break;
+				}
+				else
+				{
+					b = *itr;
+					thresholds.insert((a + b) / ((double)2));
+				}
+			}
+
+			std::cout << "print out the thresholds" << std::endl;
+			for (auto t : thresholds)
+			{
+				std::cout << "->" << t << std::endl;
+			}
+		}
+
+		/*
+		 * Operator overloads.
+		 */
+	public:
+		/*
+		 * Output stream
+		 */
+		friend std::ostream& operator<<(std::ostream& stream, dataset& d)
+		{
+			std::cout << "confusion = " << std::fixed << std::setprecision(6) << d.confusion << std::endl;
+			for (auto itr = d._data.begin(); itr != d._data.end(); ++itr)
+			{
+				stream << itr->conclusion << " [ ";
+				for (auto itr2 = itr->features.begin(); itr2 != itr->features.end(); ++itr2)
+				{
+					stream << itr2->first << '(' << itr2->second << ')' << ' ';
+				}
+				stream << " ]" << std::endl;
+			}
 			return stream;
 		}
-	};
 
-	class if_tree_template
-	{
-		struct node
-		{
-			int key_value;
-
-			//
-			// entry[index] > threshold
-			// entry[index] < threshold
-			// No equal should exist.
-			//
-			int index, threshold;
-			node *positive;
-			node *negative;
-		};
-
-	private:
-		node* root;
-
-	public:
-		if_tree_template()
-		{
-			root = NULL;
-		}
-
-		~if_tree_template()
-		{
-			destroy_tree();
-		}
-
-		void insert(int key)
-		{
-			if (root != NULL)
-			{
-				insert(key, root);
-			}
-			else
-			{
-				root = new node;
-				root->key_value = key;
-				root->positive = root->negative = NULL;
-			}
-		}
-
-		node* search(int key)
-		{
-			return search(key, root);
-		}
-
-		void destroy_tree()
-		{
-			destroy_tree(root);
-		}
-
-	private:
-		void destroy_tree(node* leaf)
-		{
-			if (leaf != NULL)
-			{
-				destroy_tree(leaf->positive);
-				destroy_tree(leaf->negative);
-				delete leaf;
-			}
-		}
-
-		void insert(int key, node* leaf)
-		{
-			if (key < leaf->key_value)
-			{
-				if (leaf->positive != NULL)
-				{
-					insert(key, leaf->positive);
-				}
-				else
-				{
-					leaf->positive = new node;
-					leaf->positive->key_value = key;
-
-					// Set the child nodes to null
-					leaf->positive->positive = leaf->positive->negative = NULL;
-				}
-			}
-			else if (key >= leaf->key_value)
-			{
-				if (leaf->negative != NULL)
-				{
-					insert(key, leaf->negative);
-				}
-				else
-				{
-					leaf->negative = new node;
-					leaf->negative->key_value = key;
-					leaf->negative->positive = leaf->negative->negative = NULL;
-				}
-			}
-		}
-
-		node* search(int key, node* leaf)
-		{
-			if (leaf != NULL)
-			{
-				if (key == leaf->key_value)
-				{
-					return leaf;
-				}
-				if (key < leaf->key_value)
-				{
-					return search(key, leaf->positive);
-				}
-				else
-				{
-					return search(key, leaf->negative);
-				}
-			}
-			else
-			{
-				return NULL;
-			}
-		}
-	};
-
-	class if_tree
-	{
 		/*
-		 * entry[index] >= threshold
-		 * When positive and negative are NULL, 'threshold' holds the final decision.
+		 * Epsilon comparator, <=
 		 */
-		struct node
+		bool operator<=(const double& epsilon)
 		{
-			int index, threshold;
-			node *positive;
-			node *negative;
-		};
-
-	private:
-		node* root, current;
-		double epsilon = -1;
-
-	protected:
-		confusion_matrix matrix;
-
-	public:
-		if_tree(confusion_matrix new_matrix)
-		{
-			matrix = new_matrix;
-			root = NULL;
-
-			predict();
+			return confusion <= epsilon;
 		}
 
-		if_tree(std::ifstream& stream)
+		/*
+		 * Assignmnet operator, =
+		 */
+		// container(vector) to dataset
+		dataset& operator=(const std::vector<entry>& rhs)
 		{
-			matrix = confusion_matrix(stream);
-			root = NULL;
+			_data = rhs;
+			update_confusion();
 
-			predict();
+			return *this;
 		}
-
-		~if_tree()
+		// dataset to dataset
+		dataset& operator=(const dataset& rhs)
 		{
-			destroy_tree();
-		}
+			_data = rhs._data;
+			confusion = rhs.confusion;
 
-		void set_epsilon(double new_epsilon)
-		{
-			epsilon = new_epsilon;
-		}
-
-	public:
-		void predict()
-		{
-			if (epsilon < 0)
-			{
-				throw std::underflow_error("predict(): Epsilon should be greater than 0.");
-			}
-			else if (epsilon > 1)
-			{
-				throw std::overflow_error("predict(): Epsilon should range between 0 and 1 only.");
-			}
-
-			if (matrix.get_confusion() <= epsilon)
-			{
-				// Build and return a leaf node with the associated final decision
-				current = new node;
-				current->threshold = ;// Final state
-				current->positive = current->negative = NULL;
-			}
-			else
-			{
-				// Cycle through the features
-				for (int idx = matrix.)
-				}
-		}
-
-		void generate_file(std::string path)
-		{
-			std::ofstream stream(path + "tree_pred_func.cpp", std::ios::out);
-
-			stream << "int tree_predict(double *attr) {" << std::endl;
-			// TODO: Call generate_file(node* leaf) to recursively generate the if-else statements.
-			stream << "}" << std::endl;
-		}
-
-		void destroy_tree()
-		{
-			destroy_tree(root);
-		}
-
-	private:
-		void destroy_tree(node* leaf)
-		{
-			if (leaf != NULL)
-			{
-				destroy_tree(leaf->positive);
-				destroy_tree(leaf->negative);
-				delete leaf;
-			}
-		}
-
-		void generate_file(node *leaf)
-		{
+			return *this;
 		}
 	};
 }
+
 
 #endif
