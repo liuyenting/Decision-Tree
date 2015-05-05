@@ -66,6 +66,10 @@ else
 	@echo "Please execute 'make all', 'make build' or 'make debug' first."
 endif
 
+migrate:
+	@echo "Copy binary into TA's project..."
+	@cp ./$(BIN_DIR)$(MAIN) ../hw4_ta/
+
 clean:
 	@rm -rf $(OBJ_DIR)*
 	@echo "'$(OBJ_DIR)' wiped..."

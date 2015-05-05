@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <fstream>
 
-#include "tree_pred_func.hpp"
+#include "dtree.hpp"
 
 void showUsage(char *argv[]);
 
@@ -22,10 +22,10 @@ int main(int argc, char *argv[])
 	std::cout << "Review the rules" << std::endl;
 	std::cout << matrix << std::endl;
 
-	dtree::if_tree itree(matrix, 0);
+	dtree::if_tree itree(matrix, std::stoi(argv[2]));
 	itree.predict();
 
-	std::ofstream output("output.cpp");
+	std::ofstream output("tree_pred_func.cpp");
 	itree.generate_file(output);
 	output.close();
 

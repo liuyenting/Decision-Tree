@@ -1,5 +1,5 @@
-#ifndef TREE_PRED_FUNC_H
-#define TREE_PRED_FUNC_H
+#ifndef DTREE_H
+#define DTREE_H
 
 #include <iostream>
 #include <iomanip>
