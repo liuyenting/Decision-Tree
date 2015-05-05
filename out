@@ -1,0 +1,162 @@
+Input from: "dat/hw.test"...
+Review the rules
+confusion = 0.468750
+1 [ 1(68) 2(153) 3(32)  ]
+1 [ 1(74) 2(167) 3(22)  ]
+1 [ 1(90) 2(182) 3(26)  ]
+-1 [ 1(83) 2(179) 3(18)  ]
+-1 [ 1(59) 2(152) 3(28)  ]
+-1 [ 1(52) 2(144) 3(24)  ]
+-1 [ 1(43) 2(170) 3(33)  ]
+-1 [ 1(47) 2(171) 3(23)  ]
+
+initialized
+range=[1, 3]
+********************
+Separate the dataset using feature "1"
+range=[1, -2147483648]
+range=[1, -2147483648]
+range=[1, 3]
+range=[1, 3]
+range=[1, 3]
+range=[1, 3]
+range=[1, 3]
+range=[1, 3]
+Least confusion=0.601562 at threshold=22.500000
+
+Review the positive dataset
+confusion = 0.000000
+1 [ 1(90) 2(182) 3(26)  ]
+
+Review the negative dataset
+confusion = 0.408163
+1 [ 1(68) 2(153) 3(32)  ]
+1 [ 1(74) 2(167) 3(22)  ]
+-1 [ 1(83) 2(179) 3(18)  ]
+-1 [ 1(59) 2(152) 3(28)  ]
+-1 [ 1(52) 2(144) 3(24)  ]
+-1 [ 1(43) 2(170) 3(33)  ]
+-1 [ 1(47) 2(171) 3(23)  ]
+
+********************
+range=[1, 3]
+********************
+Separate the dataset using feature "3"
+range=[1, -2147483648]
+range=[1, 3]
+range=[1, 3]
+range=[1, 3]
+range=[1, 3]
+range=[1, -2147483648]
+range=[1, 3]
+Least confusion=0.606414 at threshold=22.500000
+
+Review the positive dataset
+confusion = 0.320000
+1 [ 1(68) 2(153) 3(32)  ]
+-1 [ 1(59) 2(152) 3(28)  ]
+-1 [ 1(52) 2(144) 3(24)  ]
+-1 [ 1(43) 2(170) 3(33)  ]
+-1 [ 1(47) 2(171) 3(23)  ]
+
+Review the negative dataset
+confusion = 0.500000
+1 [ 1(74) 2(167) 3(22)  ]
+-1 [ 1(83) 2(179) 3(18)  ]
+
+********************
+range=[1, 3]
+********************
+Separate the dataset using feature "1"
+range=[1, -2147483648]
+range=[1, -2147483648]
+range=[1, 3]
+range=[1, 3]
+range=[1, 3]
+Least confusion=0.480000 at threshold=23.500000
+
+Review the positive dataset
+confusion = 0.000000
+1 [ 1(68) 2(153) 3(32)  ]
+
+Review the negative dataset
+confusion = 0.000000
+-1 [ 1(59) 2(152) 3(28)  ]
+-1 [ 1(52) 2(144) 3(24)  ]
+-1 [ 1(43) 2(170) 3(33)  ]
+-1 [ 1(47) 2(171) 3(23)  ]
+
+********************
+range=[1, 3]
+********************
+Separate the dataset using feature "3"
+range=[1, -2147483648]
+range=[1, 3]
+range=[1, 3]
+range=[1, -2147483648]
+Least confusion=0.328125 at threshold=23.500000
+
+Review the positive dataset
+confusion = 0.000000
+-1 [ 1(59) 2(152) 3(28)  ]
+-1 [ 1(52) 2(144) 3(24)  ]
+-1 [ 1(43) 2(170) 3(33)  ]
+
+Review the negative dataset
+confusion = 0.000000
+-1 [ 1(47) 2(171) 3(23)  ]
+
+********************
+range=[1, 3]
+********************
+Separate the dataset using feature "1"
+range=[1, -2147483648]
+range=[1, 3]
+range=[1, -2147483648]
+Least confusion=0.666667 at threshold=26.000000
+
+Review the positive dataset
+confusion = 0.000000
+-1 [ 1(59) 2(152) 3(28)  ]
+-1 [ 1(52) 2(144) 3(24)  ]
+
+Review the negative dataset
+confusion = 0.000000
+-1 [ 1(43) 2(170) 3(33)  ]
+
+********************
+range=[1, 3]
+********************
+Separate the dataset using feature "1"
+range=[1, -2147483648]
+range=[1, -2147483648]
+Least confusion=0.750000 at threshold=26.000000
+
+Review the positive dataset
+confusion = 0.000000
+-1 [ 1(59) 2(152) 3(28)  ]
+
+Review the negative dataset
+confusion = 0.000000
+-1 [ 1(52) 2(144) 3(24)  ]
+
+********************
+range=[1, 3]
+********************
+Separate the dataset using feature "1"
+range=[1, -2147483648]
+range=[1, -2147483648]
+Least confusion=0.750000 at threshold=20.000000
+
+Review the positive dataset
+confusion = 0.000000
+-1 [ 1(83) 2(179) 3(18)  ]
+
+Review the negative dataset
+confusion = 0.000000
+1 [ 1(74) 2(167) 3(22)  ]
+
+********************
+before exit
+start destructor
+finish destory

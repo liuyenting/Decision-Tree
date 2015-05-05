@@ -16,16 +16,20 @@ int main(int argc, char *argv[])
 
 	std::cout << "Input from: \"" << argv[1] << "\"..." << std::endl;
 
-	std::ifstream stream(argv[1]);
-	dtree::dataset matrix(stream);
+	std::ifstream input(argv[1]);
+	dtree::dataset matrix(input);
 
 	std::cout << "Review the rules" << std::endl;
 	std::cout << matrix << std::endl;
 
-	dtree::dataset pos, neg;
-	int idx = 4;
-	std::cout << "Separate the dataset using feature \"" << idx << "\"" << std::endl;
-	matrix.separate(idx, pos, neg);
+	dtree::if_tree itree(matrix, 0);
+	itree.predict();
+
+	std::ofstream output("output.cpp");
+	itree.generate_file(output);
+	output.close();
+
+	std::cout << "before exit" << std::endl;
 
 	return EXIT_SUCCESS;
 }

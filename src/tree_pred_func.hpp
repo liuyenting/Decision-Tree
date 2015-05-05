@@ -11,6 +11,7 @@
 #include <sstream>
 #include <cmath>
 #include <cstdlib>
+#include <limits>
 
 namespace dtree
 {
@@ -29,10 +30,26 @@ namespace dtree
 			}
 		};
 
+		struct range
+		{
+			int min, max;
+
+			range()
+			{
+				reset();
+			}
+
+			void reset()
+			{
+				min = std::numeric_limits<int>::max();
+				max = std::numeric_limits<int>::min();
+			}
+		};
+
 	private:
 		std::vector<entry> _data;
 		double confusion;
-
+		range _feature_range;
 		/*
 		 * Constructors
 		 */
@@ -62,13 +79,22 @@ namespace dtree
 			{
 				if (new_entry.conclusion == 0)
 				{
-					// Set the l
 					new_entry.conclusion = std::stoi(element);
 				}
 				else
 				{
 					auto tmp = split(element, ':');
-					new_entry.features.insert(std::make_pair(std::stoi(tmp[0]), std::stoi(tmp[1])));
+					int feature_index = std::stoi(tmp[0]);
+					new_entry.features.insert(std::make_pair(feature_index, std::stoi(tmp[1])));
+
+					if (feature_index > _feature_range.max)
+					{
+						_feature_range.max = feature_index;
+					}
+					else if (feature_index < _feature_range.min)
+					{
+						_feature_range.min = feature_index;
+					}
 				}
 			}
 			return new_entry;
@@ -122,22 +148,187 @@ namespace dtree
 			confusion -= std::pow((pos_counts / (double)_data.size()), 2) + std::pow((neg_counts / (double)_data.size()), 2);
 		}
 
+		// > threshold
+		double positive_confusion(int index, int threshold, int& counter) const
+		{
+			counter = 0;
+
+			int pos_counts = 0, neg_counts = 0;
+			for (const auto& entry : _data)
+			{
+				try
+				{
+					if (entry.features.at(index) > threshold)
+					{
+						counter++;
+
+						if (entry.conclusion > 0)
+						{
+							pos_counts++;
+						}
+						else if (entry.conclusion < 0)
+						{
+							neg_counts++;
+						}
+						else
+						{
+							throw std::domain_error("positive_confusion(): Undefined conclusion found during the refresh.");
+							std::exit(EXIT_FAILURE);
+						}
+					}
+				}
+				catch (std::exception e)
+				{
+					throw std::out_of_range("positive_confusion(): Feature index out-of-range.");
+					std::exit(EXIT_FAILURE);
+				}
+			}
+
+			return (1 - std::pow((pos_counts / (double)_data.size()), 2) - std::pow((neg_counts / (double)_data.size()), 2));
+		}
+
+		double positive_confusion(int index, int threshold) const
+		{
+			int dummy = 0;
+			return positive_confusion(index, threshold, dummy);
+		}
+
+		// < threshold
+		double negative_confusion(int index, int threshold, int& counter) const
+		{
+			counter = 0;
+
+			int pos_counts = 0, neg_counts = 0;
+			for (const auto& entry : _data)
+			{
+				try
+				{
+					if (entry.features.at(index) < threshold)
+					{
+						counter++;
+
+						if (entry.conclusion > 0)
+						{
+							pos_counts++;
+						}
+						else if (entry.conclusion < 0)
+						{
+							neg_counts++;
+						}
+						else
+						{
+							throw std::domain_error("positive_confusion(): Undefined conclusion found during the refresh.");
+							std::exit(EXIT_FAILURE);
+						}
+					}
+				}
+				catch (std::exception e)
+				{
+					throw std::out_of_range("positive_confusion(): Feature index out-of-range.");
+					std::exit(EXIT_FAILURE);
+				}
+			}
+
+			return (1 - std::pow((pos_counts / (double)_data.size()), 2) - std::pow((neg_counts / (double)_data.size()), 2));
+		}
+
+		double negative_confusion(int index, int threshold) const
+		{
+			int dummy = 0;
+			return negative_confusion(index, threshold, dummy);
+		}
+
 		/*
 		 * Branching operations and corresponding support functions.
 		 */
 	public:
-		bool can_branch()
+		bool can_branch() const
 		{
-			if (_data.size() > 1)
-			{
-				return true;
-			}
+			return (_data.size() > 1);
+		}
+
+		double get_confusion() const
+		{
+			return confusion;
 		}
 
 		/*
 		 * Separate the dataset into two according to the lowest confusion value in designated feature.
 		 */
-		void separate(int feature_index, dataset& pos, dataset& neg)
+	public:
+		/*
+		 * Parameter: target index
+		 * Return: separate at which threshold
+		 */
+		double separate(int feature_index, dataset& pos, dataset& neg)
+		{
+			double target_threshold;
+			find_least_confusion(feature_index, target_threshold);
+
+			separate(feature_index, target_threshold, pos, neg);
+
+			return target_threshold;
+		}
+
+		/*
+		 * Confusion related operations for current dataset.
+		 */
+	public:
+		range get_feature_range() const
+		{
+			return _feature_range;
+		}
+
+		void update_feature_range()
+		{
+			_feature_range.reset();
+
+			for (const auto& entry : _data)
+			{
+				if (entry.features.begin()->first < _feature_range.min)
+				{
+					_feature_range.min = entry.features.begin()->first;
+				}
+				else if (entry.features.end()->first > _feature_range.max)
+				{
+					_feature_range.max = entry.features.end()->first;
+				}
+
+				std::cout << "range=[" << _feature_range.min << ", " << _feature_range.max << "]" << std::endl;
+			}
+		}
+
+	private:
+		/*
+		 * Parameter: target index, separate at which threshold
+		 * Return: None
+		 */
+		void separate(int feature_index, double threshold, dataset& pos, dataset& neg)
+		{
+			std::vector<entry> pos_container, neg_container;
+
+			for (const auto& entry : _data)
+			{
+				if (entry.features.at(feature_index) > threshold)
+				{
+					pos_container.push_back(entry);
+				}
+				else
+				{
+					neg_container.push_back(entry);
+				}
+			}
+
+			pos = pos_container;
+			neg = neg_container;
+		}
+
+	public:
+		/*
+		 * Parameter: target index
+		 * Return: lowest confusion, the threshold that creates lowest confusion
+		 */
+		double find_least_confusion(int feature_index, double& target_threshold) const
 		{
 			std::set<int> values;
 			for (const auto& e : _data)
@@ -151,7 +342,7 @@ namespace dtree
 				}
 			}
 
-			if(values.size() == 0)
+			if (values.size() == 0)
 			{
 				throw std::out_of_range("separate(): Feature index out-of-range.");
 				std::exit(EXIT_FAILURE);
@@ -172,11 +363,23 @@ namespace dtree
 				}
 			}
 
-			std::cout << "print out the thresholds" << std::endl;
-			for (auto t : thresholds)
+			double least_confusion = 1;
+			for (const auto& t : thresholds)
 			{
-				std::cout << "->" << t << std::endl;
+				int positive_count, negative_count;
+				double pos = positive_confusion(feature_index, t, positive_count);
+				double neg = negative_confusion(feature_index, t, negative_count);
+
+				double tmp = (pos * positive_count + neg * negative_count) / _data.size();
+
+				if (tmp < least_confusion)
+				{
+					least_confusion = tmp;
+					target_threshold = t;
+				}
 			}
+
+			return least_confusion;
 		}
 
 		/*
@@ -186,7 +389,7 @@ namespace dtree
 		/*
 		 * Output stream
 		 */
-		friend std::ostream& operator<<(std::ostream& stream, dataset& d)
+		friend std::ostream& operator<<(std::ostream & stream, dataset & d)
 		{
 			std::cout << "confusion = " << std::fixed << std::setprecision(6) << d.confusion << std::endl;
 			for (auto itr = d._data.begin(); itr != d._data.end(); ++itr)
@@ -204,7 +407,7 @@ namespace dtree
 		/*
 		 * Epsilon comparator, <=
 		 */
-		bool operator<=(const double& epsilon)
+		bool operator<=(const double & epsilon)
 		{
 			return confusion <= epsilon;
 		}
@@ -217,16 +420,218 @@ namespace dtree
 		{
 			_data = rhs;
 			update_confusion();
+			update_feature_range();
 
 			return *this;
 		}
 		// dataset to dataset
-		dataset& operator=(const dataset& rhs)
+		dataset& operator=(const dataset & rhs)
 		{
 			_data = rhs._data;
 			confusion = rhs.confusion;
+			_feature_range = rhs._feature_range;
 
 			return *this;
+		}
+
+		/*
+		 * Index operator, acquiring the conclusion for specified entry
+		 */
+		int operator[](const int& index) const
+		{
+			try
+			{
+				return _data.at(index).conclusion;
+			}
+			catch (std::exception e)
+			{
+				throw std::out_of_range("operator[]: Feature index out-of-bound.");
+				std::exit(EXIT_FAILURE);
+			}
+		}
+	};
+
+	class if_tree
+	{
+		struct node
+		{
+			int feature_index, threshold, conclusion;
+			node* positive_child;
+			node* negative_child;
+		};
+
+		/*
+		 * Data related private variables.
+		 */
+	private:
+		dataset _data;
+		double _epsilon;
+
+		/*
+		 * Tree related private variables.
+		 */
+	private:
+		node* root;
+
+		/*
+		 * Constructors and destructors
+		 */
+	public:
+		if_tree(const dataset& data, const double& epsilon)
+			: _data(data), _epsilon(epsilon)
+		{
+			std::cout << "initialized" << std::endl;
+		}
+
+		~if_tree()
+		{
+			std::cout << "start destructor" << std::endl;
+			destroy_tree();
+			std::cout << "finish destory" << std::endl;
+		}
+
+		/*
+		 * Access variable
+		 */
+	public:
+		void set_epsilon(const double& epsilon)
+		{
+			_epsilon = epsilon;
+		}
+
+		void set_dataset(const dataset& data)
+		{
+			_data = data;
+		}
+
+		/*
+		 * Prediction function and its helper functions.
+		 */
+	public:
+		void predict()
+		{
+			root = predict(_data);
+		}
+
+	private:
+		node* predict(dataset& data)
+		{
+			node* current = new node;
+
+			if ((data.get_confusion() <= _epsilon) && !data.can_branch())
+			{
+				current->conclusion = data[0];
+				current->positive_child = current->negative_child = NULL;
+			}
+			else
+			{
+				auto range = data.get_feature_range();
+				double least_confusion = 1, target_threshold;
+				int target_index = -1;
+
+				std::cout << "range=[" << range.min << ", " << range.max << "]" << std::endl;
+
+				for (int i = range.min; i <= range.max; i++)
+				{
+					double tmp = data.find_least_confusion(i, target_threshold);
+					if (tmp < least_confusion)
+					{
+						least_confusion = tmp;
+						target_index = i;
+					}
+				}
+
+				std::cout << "********************" << std::endl;
+				std::cout << "Separate the dataset using feature \"" << target_index << "\"" << std::endl;
+
+				dataset pos, neg;
+				data.separate(target_index, pos, neg);
+
+				std::cout << "Least confusion=" << least_confusion << " at threshold=" << target_threshold << std::endl;
+				std::cout << std::endl;
+				std::cout << "Review the positive dataset" << std::endl;
+				std::cout << pos << std::endl;
+				std::cout << "Review the negative dataset" << std::endl;
+				std::cout << neg << std::endl;
+				std::cout << "********************" << std::endl;
+
+
+				current->feature_index = target_index;
+				current->positive_child = predict(pos);
+				current->negative_child = predict(neg);
+			}
+
+			return current;
+		}
+
+		/*
+		 * Tree destoryer and its helper function.
+		 */
+	public:
+		void destroy_tree()
+		{
+			destroy_tree(root);
+		}
+
+	private:
+		void destroy_tree(node* leaf)
+		{
+			if (leaf != NULL)
+			{
+				destroy_tree(leaf->positive_child);
+				destroy_tree(leaf->negative_child);
+				delete leaf;
+			}
+		}
+
+		/*
+		 * Generate if-else statement.
+		 */
+	public:
+		void generate_file(std::ofstream& stream)
+		{
+			stream << "int tree_predict(double *attr) {" << std::endl;
+			generate_file(stream, root, 1);
+			stream << '}' << std::endl;
+		}
+
+	private:
+		void generate_file(std::ofstream& stream, node* leaf, int indent)
+		{
+			if ((leaf->positive_child == NULL) && (leaf->negative_child == NULL))
+			{
+				for (int i = 0; i < indent; i++)
+				{
+					stream << '\t';
+				}
+				stream << "return " << leaf->conclusion << ';' << std::endl;
+
+				return;
+			}
+			else
+			{
+				for (int i = 0; i < indent; i++)
+				{
+					stream << '\t';
+				}
+				stream << "if(attr[ " << leaf->feature_index << " ] > " << leaf->threshold << ") {" << std::endl;
+				if (leaf->positive_child != NULL)
+				{
+					generate_file(stream, leaf->positive_child, indent + 1);
+				}
+				for (int i = 0; i < indent; i++)
+				{
+					stream << '\t';
+				}
+				stream << "} else {" << std::endl;
+				generate_file(stream, leaf->negative_child, indent + 1);
+				for (int i = 0; i < indent; i++)
+				{
+					stream << '\t';
+				}
+				stream << '}' << std::endl;
+
+			}
 		}
 	};
 }
