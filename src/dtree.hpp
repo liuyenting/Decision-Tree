@@ -337,15 +337,13 @@ namespace dtree
 				}
 				catch (std::out_of_range e)
 				{
-					if (threshold == 0)
-					{
-						neg_container.push_back(entry);
-					}
-					else
-					{
-						throw std::out_of_range("separate(): Invalid feature index.");
-						std::exit(EXIT_FAILURE);
-					}
+					// oor-patch
+					neg_container.push_back(entry);
+
+					/*
+					throw std::out_of_range("separate(): Invalid feature index.");
+					std::exit(EXIT_FAILURE);
+					*/
 				}
 			}
 
@@ -579,7 +577,6 @@ namespace dtree
 					double tmp_confusion = data.find_least_confusion(i, tmp_threshold);
 					if (tmp_confusion < least_confusion)
 					{
-						std::cout << "new low!" << std::endl;
 						least_confusion = tmp_confusion;
 
 						target_index = i;
