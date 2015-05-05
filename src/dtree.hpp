@@ -187,12 +187,6 @@ namespace dtree
 			return (1 - std::pow((pos_counts / (double)_data.size()), 2) - std::pow((neg_counts / (double)_data.size()), 2));
 		}
 
-		double positive_confusion(int index, int threshold) const
-		{
-			int dummy = 0;
-			return positive_confusion(index, threshold, dummy);
-		}
-
 		// < threshold
 		double negative_confusion(int index, int threshold, int& counter) const
 		{
@@ -230,12 +224,6 @@ namespace dtree
 			}
 
 			return (1 - std::pow((pos_counts / (double)_data.size()), 2) - std::pow((neg_counts / (double)_data.size()), 2));
-		}
-
-		double negative_confusion(int index, int threshold) const
-		{
-			int dummy = 0;
-			return negative_confusion(index, threshold, dummy);
 		}
 
 		/*
@@ -365,8 +353,13 @@ namespace dtree
 				}
 				catch (std::out_of_range e)
 				{
+					/*
 					throw std::out_of_range("find_least_confusion(): Invalid feature index.");
 					std::exit(EXIT_FAILURE);
+					*/
+					// oor-patch
+					std::cerr << "find_least_confusion(): Invalid feature index. Using 0 instead." << std::endl;
+					values.insert(0);
 				}
 			}
 
@@ -382,6 +375,11 @@ namespace dtree
 				double a = *itr, b;
 				if (++itr == values.end())
 				{
+					// oor-patch
+					if (a == 0)
+					{
+						thresholds.insert(0);
+					}
 					break;
 				}
 				else
