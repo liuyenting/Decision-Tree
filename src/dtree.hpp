@@ -217,14 +217,14 @@ namespace dtree
 						}
 						else
 						{
-							throw std::domain_error("positive_confusion(): Undefined conclusion found during the refresh.");
+							throw std::domain_error("negative_confusion(): Undefined conclusion found during the refresh.");
 							std::exit(EXIT_FAILURE);
 						}
 					}
 				}
 				catch (std::exception e)
 				{
-					throw std::out_of_range("positive_confusion(): Feature index out-of-range.");
+					throw std::out_of_range("negative_confusion(): Feature index out-of-range.");
 					std::exit(EXIT_FAILURE);
 				}
 			}
@@ -244,7 +244,27 @@ namespace dtree
 	public:
 		bool can_branch() const
 		{
-			return (_data.size() > 1);
+			if (_data.size() > 1)
+			{
+				// OOR-patch
+				int tmp = 0;
+				for (const auto& entry : _data)
+				{
+					if (tmp == 0)
+					{
+						tmp = entry.conclusion;
+					}
+					else if (entry.conclusion != tmp)
+					{
+						return true;
+					}
+				}
+				return false;
+			}
+			else
+			{
+				return false;
+			}
 		}
 
 		double get_confusion() const
@@ -293,8 +313,6 @@ namespace dtree
 				{
 					_feature_range.max = entry.features.end()->first;
 				}
-
-				//std::cout << "range=[" << _feature_range.min << ", " << _feature_range.max << "]" << std::endl;
 			}
 		}
 
@@ -309,13 +327,21 @@ namespace dtree
 
 			for (const auto& entry : _data)
 			{
-				if (entry.features.at(feature_index) > threshold)
+				try
 				{
-					pos_container.push_back(entry);
+					if (entry.features.at(feature_index) > threshold)
+					{
+						pos_container.push_back(entry);
+					}
+					else
+					{
+						neg_container.push_back(entry);
+					}
 				}
-				else
+				catch (std::out_of_range e)
 				{
-					neg_container.push_back(entry);
+					throw std::out_of_range("separate(): Feature index out-of-range.");
+					std::exit(EXIT_FAILURE);
 				}
 			}
 
@@ -339,12 +365,14 @@ namespace dtree
 				}
 				catch (std::out_of_range e)
 				{
+					throw std::out_of_range("find_least_confusion(): Feature index out-of-range.");
+					std::exit(EXIT_FAILURE);
 				}
 			}
 
 			if (values.size() == 0)
 			{
-				throw std::out_of_range("separate(): Feature index out-of-range.");
+				throw std::out_of_range("find_least_confusion(): Feature index out-of-range.");
 				std::exit(EXIT_FAILURE);
 			}
 
@@ -391,15 +419,16 @@ namespace dtree
 		 */
 		friend std::ostream& operator<<(std::ostream & stream, dataset & d)
 		{
-			std::cout << "confusion = " << std::fixed << std::setprecision(6) << d.confusion << std::endl;
+			std::cout << "confusion = " << std::fixed << std::setprecision(6) << d.confusion;
 			for (auto itr = d._data.begin(); itr != d._data.end(); ++itr)
 			{
+				stream << std::endl;
 				stream << itr->conclusion << " [ ";
 				for (auto itr2 = itr->features.begin(); itr2 != itr->features.end(); ++itr2)
 				{
 					stream << itr2->first << '(' << itr2->second << ')' << ' ';
 				}
-				stream << " ]" << std::endl;
+				stream << " ]";
 			}
 			return stream;
 		}
@@ -537,8 +566,9 @@ namespace dtree
 					double tmp_confusion = data.find_least_confusion(i, tmp_threshold);
 					if (tmp_confusion < least_confusion)
 					{
+						std::cout << "new low!" << std::endl;
 						least_confusion = tmp_confusion;
-						
+
 						target_index = i;
 						target_threshold = tmp_threshold;
 					}
@@ -555,7 +585,7 @@ namespace dtree
 				std::cout << std::endl;
 
 				current->threshold = target_threshold;
-	
+
 				std::cout << "Review the positive dataset" << std::endl;
 				std::cout << pos << std::endl;
 				std::cout << "Review the negative dataset" << std::endl;
@@ -602,7 +632,7 @@ namespace dtree
 
 	private:
 
-		#define INDENT "  "
+#define INDENT "  "
 		void generate_file(std::ofstream& stream, node* leaf, int indent)
 		{
 			if ((leaf->positive_child == NULL) && (leaf->negative_child == NULL))
@@ -637,7 +667,6 @@ namespace dtree
 					stream << INDENT;
 				}
 				stream << '}' << std::endl;
-
 			}
 		}
 	};

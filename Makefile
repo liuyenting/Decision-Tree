@@ -9,7 +9,8 @@ OBJ_DIR := obj/
 BIN_DIR := bin/
 DAT_DIR := dat/
 
-CXXFLAGS += -Wall -O3 -std=c++11 -fopenmp -DMMF
+#CXXFLAGS += -Wall -O3 -std=c++11 -fopenmp -DMMF
+CXXFLAGS += -Wall -O3 -std=c++11
 
 # Create directories if not exist
 $(OBJ_DIR):
@@ -42,7 +43,7 @@ endif
 
 all: clean build
 
-debug: CXXFLAGS += -DDEBUG
+debug: CXXFLAGS += -DDEBUG -g3
 debug: clean build
 	@mv $(BIN_DIR)$(MAIN) $(BIN_DIR)$(MAIN)_debug
 
@@ -59,7 +60,7 @@ $(OBJ_DIR)%.o: $(SRC_DIR)%.cpp
 
 run:
 ifneq ($(wildcard $(BIN_DIR)$(MAIN)),)
-	@./$(BIN_DIR)$(MAIN) $(DAT_DIR)hw.test 0.1
+	@./$(BIN_DIR)$(MAIN) $(DAT_DIR)a1a/a1a.train 0.1
 else ifneq ($(wildcard $(BIN_DIR)$(MAIN)_debug),)
 	@./$(BIN_DIR)$(MAIN)_debug $(DAT_DIR)heart.test 0.1
 else
