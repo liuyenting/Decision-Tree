@@ -434,7 +434,7 @@ namespace dtree
 			for (auto itr = d._data.begin(); itr != d._data.end(); ++itr)
 			{
 				stream << std::endl;
-				stream << itr->conclusion << " [ ";
+				stream << itr->conclusion << "\t[ ";
 				for (auto itr2 = itr->features.begin(); itr2 != itr->features.end(); ++itr2)
 				{
 					stream << itr2->first << '(' << itr2->second << ')' << ' ';
@@ -575,6 +575,9 @@ namespace dtree
 				{
 					double tmp_threshold;
 					double tmp_confusion = data.find_least_confusion(i, tmp_threshold);
+					
+					std::cout << "i=" << i << ",\tconfusion=" << tmp_confusion << std::endl;
+
 					if (tmp_confusion < least_confusion)
 					{
 						least_confusion = tmp_confusion;
@@ -583,6 +586,7 @@ namespace dtree
 						target_threshold = tmp_threshold;
 					}
 				}
+				std::cout << std::endl;
 
 				std::cout << "Separate the dataset using feature \"" << target_index << "\"" << std::endl;
 
