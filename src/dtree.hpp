@@ -153,24 +153,13 @@ namespace dtree
 		{
 			counter = 0;
 
-			bool valid;
 			int pos_counts = 0, neg_counts = 0;
 			for (const auto& entry : _data)
 			{
-				valid = false;
 				try
 				{
 					// oor-patch
-					if ((threshold == 0) && (entry.features.count(index) == 1))
-					{
-						valid = true;
-					}
-					else if (entry.features.at(index) > threshold)
-					{
-						valid = true;
-					}
-
-					if (valid)
+					if ((entry.features.at(index) > threshold) && (threshold != 0))
 					{
 						counter++;
 
@@ -191,10 +180,13 @@ namespace dtree
 				}
 				catch (std::out_of_range e)
 				{
+					// oor-patch
+					/*
 					std::stringstream stream;
 					stream << "positive_confusion(): Invalid feature index \"" << index << "\"";
 					throw std::out_of_range(stream.str());
 					std::exit(EXIT_FAILURE);
+					*/
 				}
 			}
 
@@ -206,24 +198,13 @@ namespace dtree
 		{
 			counter = 0;
 
-			bool valid;
 			int pos_counts = 0, neg_counts = 0;
 			for (const auto& entry : _data)
 			{
-				valid = false;
 				try
 				{
 					// oor-patch
-					if ((threshold == 0) && (entry.features.count(index) == 0))
-					{
-						valid = true;
-					}
-					else if (entry.features.at(index) < threshold)
-					{
-						valid = true;
-					}
-
-					if (valid)
+					if (((threshold == 0) && (entry.features.count(index) == 0)) || ((threshold != 0) && (entry.features.at(index) < threshold)))
 					{
 						counter++;
 
@@ -245,7 +226,7 @@ namespace dtree
 				catch (std::out_of_range e)
 				{
 					std::stringstream stream;
-					stream << "negative_confusion(): Invalid feature index \"" << index << "\"";
+					stream << "negative_confusion(): Invalid feature index \"" << index << "\".";
 					throw std::out_of_range(stream.str());
 					std::exit(EXIT_FAILURE);
 				}
@@ -356,8 +337,15 @@ namespace dtree
 				}
 				catch (std::out_of_range e)
 				{
-					throw std::out_of_range("separate(): Invalid feature index.");
-					std::exit(EXIT_FAILURE);
+					if (threshold == 0)
+					{
+						neg_container.push_back(entry);
+					}
+					else
+					{
+						throw std::out_of_range("separate(): Invalid feature index.");
+						std::exit(EXIT_FAILURE);
+					}
 				}
 			}
 
@@ -386,7 +374,6 @@ namespace dtree
 					std::exit(EXIT_FAILURE);
 					*/
 					// oor-patch
-					std::cerr << "find_least_confusion(): Invalid feature index. Using 0 instead." << std::endl;
 					values.insert(0);
 				}
 			}
