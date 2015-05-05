@@ -177,7 +177,7 @@ namespace dtree
 						}
 					}
 				}
-				catch (std::exception e)
+				catch (std::out_of_range e)
 				{
 					throw std::out_of_range("positive_confusion(): Feature index out-of-range.");
 					std::exit(EXIT_FAILURE);
@@ -222,7 +222,7 @@ namespace dtree
 						}
 					}
 				}
-				catch (std::exception e)
+				catch (std::out_of_range e)
 				{
 					throw std::out_of_range("negative_confusion(): Feature index out-of-range.");
 					std::exit(EXIT_FAILURE);
@@ -372,7 +372,7 @@ namespace dtree
 
 			if (values.size() == 0)
 			{
-				throw std::out_of_range("find_least_confusion(): Feature index out-of-range.");
+				throw std::runtime_error("find_least_confusion(): No values in the set to build the threshold table.");
 				std::exit(EXIT_FAILURE);
 			}
 
