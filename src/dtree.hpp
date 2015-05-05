@@ -378,8 +378,13 @@ namespace dtree
 
 			if (values.size() == 0)
 			{
-				throw std::runtime_error("find_least_confusion(): No values in the set to build the threshold table.");
+				throw std::runtime_error("find_least_confusion(): No values in the set to build the threshold table. Force confusion as 1.");
+				// oor-patch
+				/*
 				std::exit(EXIT_FAILURE);
+				*/
+				target_threshold = -1;
+				return 1;
 			}
 
 			std::set<double> thresholds;
@@ -434,7 +439,7 @@ namespace dtree
 			for (auto itr = d._data.begin(); itr != d._data.end(); ++itr)
 			{
 				stream << std::endl;
-				stream << itr->conclusion << "\t[ ";
+				stream << itr->conclusion << " [ ";
 				for (auto itr2 = itr->features.begin(); itr2 != itr->features.end(); ++itr2)
 				{
 					stream << itr2->first << '(' << itr2->second << ')' << ' ';
