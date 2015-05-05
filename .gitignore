@@ -16,3 +16,7 @@ dat/*
 bin/
 bin/*
 *.out
+
+# Temporary debug files
+out
+err
