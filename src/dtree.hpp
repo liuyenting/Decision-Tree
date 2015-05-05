@@ -179,7 +179,7 @@ namespace dtree
 				}
 				catch (std::out_of_range e)
 				{
-					throw std::out_of_range("positive_confusion(): Feature index out-of-range.");
+					throw std::out_of_range("positive_confusion(): Invalid feature index.");
 					std::exit(EXIT_FAILURE);
 				}
 			}
@@ -224,7 +224,7 @@ namespace dtree
 				}
 				catch (std::out_of_range e)
 				{
-					throw std::out_of_range("negative_confusion(): Feature index out-of-range.");
+					throw std::out_of_range("negative_confusion(): Invalid feature index.");
 					std::exit(EXIT_FAILURE);
 				}
 			}
@@ -340,7 +340,7 @@ namespace dtree
 				}
 				catch (std::out_of_range e)
 				{
-					throw std::out_of_range("separate(): Feature index out-of-range.");
+					throw std::out_of_range("separate(): Invalid feature index.");
 					std::exit(EXIT_FAILURE);
 				}
 			}
@@ -365,7 +365,7 @@ namespace dtree
 				}
 				catch (std::out_of_range e)
 				{
-					throw std::out_of_range("find_least_confusion(): Feature index out-of-range.");
+					throw std::out_of_range("find_least_confusion(): Invalid feature index.");
 					std::exit(EXIT_FAILURE);
 				}
 			}
