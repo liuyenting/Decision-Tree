@@ -294,7 +294,7 @@ namespace dtree
 					_feature_range.max = entry.features.end()->first;
 				}
 
-				std::cout << "range=[" << _feature_range.min << ", " << _feature_range.max << "]" << std::endl;
+				//std::cout << "range=[" << _feature_range.min << ", " << _feature_range.max << "]" << std::endl;
 			}
 		}
 
@@ -455,7 +455,8 @@ namespace dtree
 	{
 		struct node
 		{
-			int feature_index, threshold, conclusion;
+			int feature_index, conclusion;
+			double threshold;
 			node* positive_child;
 			node* negative_child;
 		};
@@ -480,14 +481,11 @@ namespace dtree
 		if_tree(const dataset& data, const double& epsilon)
 			: _data(data), _epsilon(epsilon)
 		{
-			std::cout << "initialized" << std::endl;
 		}
 
 		~if_tree()
 		{
-			std::cout << "start destructor" << std::endl;
 			destroy_tree();
-			std::cout << "finish destory" << std::endl;
 		}
 
 		/*
@@ -526,37 +524,44 @@ namespace dtree
 			else
 			{
 				auto range = data.get_feature_range();
-				double least_confusion = 1, target_threshold;
+				double least_confusion = 1, target_threshold = -1;
 				int target_index = -1;
 
+				std::cout << "********************" << std::endl;
 				std::cout << "range=[" << range.min << ", " << range.max << "]" << std::endl;
+				std::cout << std::endl;
 
 				for (int i = range.min; i <= range.max; i++)
 				{
-					double tmp = data.find_least_confusion(i, target_threshold);
-					if (tmp < least_confusion)
+					double tmp_threshold;
+					double tmp_confusion = data.find_least_confusion(i, tmp_threshold);
+					if (tmp_confusion < least_confusion)
 					{
-						least_confusion = tmp;
+						least_confusion = tmp_confusion;
+						
 						target_index = i;
+						target_threshold = tmp_threshold;
 					}
 				}
 
-				std::cout << "********************" << std::endl;
 				std::cout << "Separate the dataset using feature \"" << target_index << "\"" << std::endl;
+
+				current->feature_index = target_index;
 
 				dataset pos, neg;
 				data.separate(target_index, pos, neg);
 
 				std::cout << "Least confusion=" << least_confusion << " at threshold=" << target_threshold << std::endl;
 				std::cout << std::endl;
+
+				current->threshold = target_threshold;
+	
 				std::cout << "Review the positive dataset" << std::endl;
 				std::cout << pos << std::endl;
 				std::cout << "Review the negative dataset" << std::endl;
 				std::cout << neg << std::endl;
 				std::cout << "********************" << std::endl;
 
-
-				current->feature_index = target_index;
 				current->positive_child = predict(pos);
 				current->negative_child = predict(neg);
 			}
@@ -614,7 +619,7 @@ namespace dtree
 				{
 					stream << '\t';
 				}
-				stream << "if(attr[ " << leaf->feature_index << " ] > " << leaf->threshold << ") {" << std::endl;
+				stream << "if(attr[" << leaf->feature_index << "] > " << leaf->threshold << ") {" << std::endl;
 				if (leaf->positive_child != NULL)
 				{
 					generate_file(stream, leaf->positive_child, indent + 1);

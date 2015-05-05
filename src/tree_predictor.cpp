@@ -29,8 +29,6 @@ int main(int argc, char *argv[])
 	itree.generate_file(output);
 	output.close();
 
-	std::cout << "before exit" << std::endl;
-
 	return EXIT_SUCCESS;
 }
 
