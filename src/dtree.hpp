@@ -18,7 +18,7 @@ namespace dtree
 	class dataset
 	{
 		/*
-		 * ((feature, data), conclusion)
+		 * ((feature_id, data), conclusion)
 		 */
 		struct entry
 		{
@@ -300,15 +300,15 @@ namespace dtree
 		{
 			_feature_range.reset();
 
-			for (const auto& entry : _data)
+			for (const auto& e : _data)
 			{
-				if (entry.features.begin()->first < _feature_range.min)
+				if (e.features.begin()->first < _feature_range.min)
 				{
-					_feature_range.min = entry.features.begin()->first;
+					_feature_range.min = e.features.begin()->first;
 				}
-				else if (entry.features.end()->first > _feature_range.max)
+				else if (e.features.rbegin()->first > _feature_range.max)
 				{
-					_feature_range.max = entry.features.end()->first;
+					_feature_range.max = e.features.rbegin()->first;
 				}
 			}
 		}
@@ -379,12 +379,7 @@ namespace dtree
 			if (values.size() == 0)
 			{
 				throw std::runtime_error("find_least_confusion(): No values in the set to build the threshold table. Force confusion as 1.");
-				// oor-patch
-				/*
 				std::exit(EXIT_FAILURE);
-				*/
-				target_threshold = -1;
-				return 1;
 			}
 
 			std::set<double> thresholds;
@@ -559,6 +554,13 @@ namespace dtree
 	private:
 		node* predict(dataset& data)
 		{
+			// oor-patch
+			// TODO: retraverse the tree using different branching method
+			if (std::isnan(data.get_confusion()))
+			{
+				return NULL;
+			}
+
 			node* current = new node;
 
 			if ((data.get_confusion() <= _epsilon) && !data.can_branch())
@@ -580,7 +582,7 @@ namespace dtree
 				{
 					double tmp_threshold;
 					double tmp_confusion = data.find_least_confusion(i, tmp_threshold);
-					
+
 					std::cout << "i=" << i << ",\tconfusion=" << tmp_confusion << std::endl;
 
 					if (tmp_confusion < least_confusion)
