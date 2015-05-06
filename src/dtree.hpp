@@ -724,6 +724,8 @@ namespace dtree
 				}
 			}
 
+			std::cout << "> Current node completed!" << std::endl << std::endl;
+
 			return current;
 		}
 

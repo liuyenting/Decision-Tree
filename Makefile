@@ -60,7 +60,7 @@ $(OBJ_DIR)%.o: $(SRC_DIR)%.cpp
 
 run:
 ifneq ($(wildcard $(BIN_DIR)$(MAIN)),)
-	@./$(BIN_DIR)$(MAIN) $(DAT_DIR)a1a/a1a.train 0.3
+	@./$(BIN_DIR)$(MAIN) $(DAT_DIR)a1a/a1a.train 0.45
 else ifneq ($(wildcard $(BIN_DIR)$(MAIN)_debug),)
 	@./$(BIN_DIR)$(MAIN)_debug $(DAT_DIR)heart.test 0.1
 else
