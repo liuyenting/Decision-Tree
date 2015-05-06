@@ -242,7 +242,7 @@ namespace dtree
 		 */
 	private:
 		template <typename Map>
-		bool map_compare(Map const& lhs, Map const& rhs)
+		bool map_compare(Map const& lhs, Map const& rhs) const
 		{
 			// No predicate needed because there is operator== for pairs already.
 			return (lhs.size() == rhs.size()) && std::equal(lhs.begin(), lhs.end(), rhs.begin());
@@ -258,7 +258,7 @@ namespace dtree
 				auto itr = _data.begin();
 				for (++itr; itr != _data.end(); ++itr)
 				{
-					if (!map_compare(_data[0].features, (*itr).features))
+					if (!map_compare(_data[0].features, itr->features))
 					{
 						return true;
 					}
