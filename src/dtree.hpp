@@ -240,20 +240,25 @@ namespace dtree
 		/*
 		 * Branching operations and corresponding support functions.
 		 */
+	private:
+		template <typename Map>
+		bool map_compare(Map const& lhs, Map const& rhs)
+		{
+			// No predicate needed because there is operator== for pairs already.
+			return (lhs.size() == rhs.size()) && std::equal(lhs.begin(), lhs.end(), rhs.begin());
+		}
+
 	public:
 		bool can_branch() const
 		{
 			if (_data.size() > 1)
 			{
-				// OOR-patch
-				int tmp = 0;
-				for (const auto& entry : _data)
+				// oor-patch-2				
+				// Compare for maps' equality
+				auto itr = _data.begin();
+				for (++itr; itr != _data.end(); ++itr)
 				{
-					if (tmp == 0)
-					{
-						tmp = entry.conclusion;
-					}
-					else if (entry.conclusion != tmp)
+					if (!map_compare(_data[0].features, (*itr).features))
 					{
 						return true;
 					}
@@ -556,7 +561,7 @@ namespace dtree
 		{
 			root = predict(_data);
 
-			if(!leaf_reached)
+			if (!leaf_reached)
 			{
 				throw std::runtime_error("predict(): No solution.");
 				std::exit(EXIT_FAILURE);
@@ -647,7 +652,7 @@ namespace dtree
 					std::cout << "Review the positive dataset" << std::endl;
 					std::cout << pos << std::endl;
 
-					if(std::isnan(pos.get_confusion()))
+					if (std::isnan(pos.get_confusion()))
 					{
 						std::cout << "...INVALID" << std::endl;
 						std::cout << "********************" << std::endl;
@@ -657,25 +662,34 @@ namespace dtree
 					std::cout << "Review the negative dataset" << std::endl;
 					std::cout << neg << std::endl;
 
-					if(std::isnan(neg.get_confusion()))
+					if (std::isnan(neg.get_confusion()))
 					{
 						std::cout << "...INVALID" << std::endl;
 						std::cout << "********************" << std::endl;
 						continue;
 					}
-					
+
 					// Check whether next value needs to be tested
 					leaf_reached = false;
 					current->positive_child = predict(pos);
-					if(!leaf_reached)
+					if (!leaf_reached)
+					{
 						continue;
+					}
 
 					leaf_reached = false;
 					current->negative_child = predict(neg);
-					if(!leaf_reached)
+					if (!leaf_reached)
+					{
 						continue;
+					}
 
 					std::cout << "********************" << std::endl;
+
+					if (leaf_reached)
+					{
+						break;
+					}
 				}
 			}
 
