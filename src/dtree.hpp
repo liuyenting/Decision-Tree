@@ -12,6 +12,8 @@
 #include <cmath>
 #include <cstdlib>
 #include <limits>
+#include <tuple>
+#include <algorithm>
 
 namespace dtree
 {
@@ -552,6 +554,9 @@ namespace dtree
 		}
 
 	private:
+		bool answer_found = false;
+		double least_confusion = 1;
+
 		node* predict(dataset& data)
 		{
 			// oor-patch
@@ -571,8 +576,15 @@ namespace dtree
 			else
 			{
 				auto range = data.get_feature_range();
+				// oor-patch-2
+				/*
 				double least_confusion = 1, target_threshold = -1;
 				int target_index = -1;
+				*/
+				/*
+				 * (index, confusion, threshold)
+				 */
+				std::vector<std::tuple<int, double, double> > branches;
 
 				std::cout << "********************" << std::endl;
 				std::cout << "range=[" << range.min << ", " << range.max << "]" << std::endl;
@@ -585,6 +597,8 @@ namespace dtree
 
 					std::cout << "i=" << i << ",\tconfusion=" << tmp_confusion << std::endl;
 
+					// oor-patch-2
+					/*
 					if (tmp_confusion < least_confusion)
 					{
 						least_confusion = tmp_confusion;
@@ -592,29 +606,59 @@ namespace dtree
 						target_index = i;
 						target_threshold = tmp_threshold;
 					}
+					*/
+					branches.push_back(std::make_tuple(i, tmp_confusion, tmp_threshold));
 				}
 				std::cout << std::endl;
 
-				std::cout << "Separate the dataset using feature \"" << target_index << "\"" << std::endl;
+				// oor-patch-2
+				std::sort(branches.begin(), branches.end(), [](std::tuple<int, double, double> const & t1, std::tuple<int, double, double> const & t2)
+				{
+					// Compared using the confusion
+					return std::get<1>(t1) < std::get<1>(t2);
+				});
 
-				current->feature_index = target_index;
+				// oor-patch-2
+				for (const auto& branch : branches)
+				{
+					current->feature_index = std::get<0>(branch);
 
-				dataset pos, neg;
-				data.separate(target_index, pos, neg);
+					std::cout << "Separate the dataset using feature \"" << current->feature_index << "\"" << std::endl;
 
-				std::cout << "Least confusion=" << least_confusion << " at threshold=" << target_threshold << std::endl;
-				std::cout << std::endl;
+					dataset pos, neg;
+					data.separate(current->feature_index, pos, neg);
 
-				current->threshold = target_threshold;
+					current->threshold = std::get<2>(branch);
 
-				std::cout << "Review the positive dataset" << std::endl;
-				std::cout << pos << std::endl;
-				std::cout << "Review the negative dataset" << std::endl;
-				std::cout << neg << std::endl;
-				std::cout << "********************" << std::endl;
+					// TODO: Add back for least_confusion tracking.
+					std::cout << "confusion=" << std::get<1>(branch) << " at threshold=" << current->threshold << std::endl;
+					std::cout << std::endl;
 
-				current->positive_child = predict(pos);
-				current->negative_child = predict(neg);
+					std::cout << "Review the positive dataset" << std::endl;
+					std::cout << pos << std::endl;
+
+					if(std::isnan(pos.get_confusion()))
+					{
+						std::cout << "...INVALID" << std::endl;
+						std::cout << "********************" << std::endl;
+						continue;
+					}
+
+					std::cout << "Review the negative dataset" << std::endl;
+					std::cout << neg << std::endl;
+
+					if(std::isnan(neg.get_confusion()))
+					{
+						std::cout << "...INVALID" << std::endl;
+						std::cout << "********************" << std::endl;
+						continue;
+					}
+					
+					current->positive_child = predict(pos);
+					current->negative_child = predict(neg);
+
+					std::cout << "********************" << std::endl;
+				}
 			}
 
 			return current;
