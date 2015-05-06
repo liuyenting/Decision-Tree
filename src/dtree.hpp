@@ -253,7 +253,7 @@ namespace dtree
 		{
 			if (_data.size() > 1)
 			{
-				// oor-patch-2				
+				// oor-patch-2
 				// Compare for maps' equality
 				auto itr = _data.begin();
 				for (++itr; itr != _data.end(); ++itr)
@@ -274,6 +274,37 @@ namespace dtree
 		double get_confusion() const
 		{
 			return confusion;
+		}
+
+		// oor-patch-3
+		int get_conclusion() const
+		{
+			int pos_counts = 0, neg_counts = 0;
+			for (const auto& entry : _data)
+			{
+				if (entry.conclusion > 0)
+				{
+					pos_counts++;
+				}
+				else if (entry.conclusion < 0)
+				{
+					neg_counts++;
+				}
+				else
+				{
+					throw std::domain_error("update_confusion(): Undefined conclusion found during the refresh.");
+					std::exit(EXIT_FAILURE);
+				}
+			}
+
+			if (pos_counts > neg_counts)
+			{
+				return 1;
+			}
+			else
+			{
+				return -1;
+			}
 		}
 
 		/*
@@ -580,7 +611,7 @@ namespace dtree
 
 			node* current = new node;
 
-			if ((data.get_confusion() <= _epsilon) && !data.can_branch())
+			if ((data.get_confusion() <= _epsilon) || !data.can_branch())
 			{
 				current->conclusion = data[0];
 				current->positive_child = current->negative_child = NULL;
