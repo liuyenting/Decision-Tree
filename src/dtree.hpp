@@ -24,7 +24,7 @@ namespace dtree
 		 */
 		struct entry
 		{
-			std::map<int, int> features;
+			std::map<int, double> features;
 			int conclusion;
 
 			entry() : conclusion(0)
@@ -87,7 +87,7 @@ namespace dtree
 				{
 					auto tmp = split(element, ':');
 					int feature_index = std::stoi(tmp[0]);
-					new_entry.features.insert(std::make_pair(feature_index, std::stoi(tmp[1])));
+					new_entry.features.insert(std::make_pair(feature_index, std::stof(tmp[1])));
 
 					if (feature_index > _feature_range.max)
 					{
@@ -151,7 +151,7 @@ namespace dtree
 		}
 
 		// > threshold
-		double positive_confusion(int index, int threshold, int& counter) const
+		double positive_confusion(int index, double threshold, int& counter) const
 		{
 			counter = 0;
 
@@ -196,7 +196,7 @@ namespace dtree
 		}
 
 		// < threshold
-		double negative_confusion(int index, int threshold, int& counter) const
+		double negative_confusion(int index, double threshold, int& counter) const
 		{
 			counter = 0;
 
@@ -436,7 +436,7 @@ namespace dtree
 				else
 				{
 					b = *itr;
-					thresholds.insert((a + b) / ((double)2));
+					thresholds.insert((a + b) / 2);
 				}
 			}
 
