@@ -547,16 +547,23 @@ namespace dtree
 		/*
 		 * Prediction function and its helper functions.
 		 */
+	private:
+		bool leaf_reached;
+		double least_confusion = 1;
+
 	public:
 		void predict()
 		{
 			root = predict(_data);
+
+			if(!leaf_reached)
+			{
+				throw std::runtime_error("predict(): No solution.");
+				std::exit(EXIT_FAILURE);
+			}
 		}
 
 	private:
-		bool answer_found = false;
-		double least_confusion = 1;
-
 		node* predict(dataset& data)
 		{
 			// oor-patch
@@ -572,6 +579,9 @@ namespace dtree
 			{
 				current->conclusion = data[0];
 				current->positive_child = current->negative_child = NULL;
+
+				// oor-patch-2
+				leaf_reached = true;
 			}
 			else
 			{
@@ -654,8 +664,16 @@ namespace dtree
 						continue;
 					}
 					
+					// Check whether next value needs to be tested
+					leaf_reached = false;
 					current->positive_child = predict(pos);
+					if(!leaf_reached)
+						continue;
+
+					leaf_reached = false;
 					current->negative_child = predict(neg);
+					if(!leaf_reached)
+						continue;
 
 					std::cout << "********************" << std::endl;
 				}
