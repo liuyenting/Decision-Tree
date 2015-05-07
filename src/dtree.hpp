@@ -253,7 +253,6 @@ namespace dtree
 		{
 			if (_data.size() > 1)
 			{
-				// oor-patch-2
 				// Compare for maps' equality
 				auto itr = _data.begin();
 				for (++itr; itr != _data.end(); ++itr)
@@ -639,6 +638,7 @@ namespace dtree
 				for (int i = range.min; i <= range.max; i++)
 				{
 					double tmp_threshold;
+					// TODO: Using threshold sequence.
 					double tmp_confusion = data.find_least_confusion(i, tmp_threshold);
 
 					std::cout << "i=" << i << ",\tconfusion=" << tmp_confusion << std::endl;
@@ -660,8 +660,22 @@ namespace dtree
 				// oor-patch-2
 				std::sort(branches.begin(), branches.end(), [](std::tuple<int, double, double> const & t1, std::tuple<int, double, double> const & t2)
 				{
-					// Compared using the confusion
-					return std::get<1>(t1) < std::get<1>(t2);
+					// Compared using the confusion -> threshold -> index, ascending
+					if (std::get<1>(t1) == std::get<1>(t2))
+					{
+						if (std::get<2>(t1) == std::get<2>(t2))
+						{
+							return std::get<0>(t1) < std::get<0>(t2);
+						}
+						else
+						{
+							return std::get<2>(t1) < std::get<1>(t2)
+						}
+					}
+					else
+					{
+						return std::get<1>(t1) < std::get<1>(t2);
+					}
 				});
 
 				// oor-patch-2
@@ -723,8 +737,6 @@ namespace dtree
 					}
 				}
 			}
-
-			std::cout << "> Current node completed!" << std::endl << std::endl;
 
 			return current;
 		}
