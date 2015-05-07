@@ -669,7 +669,7 @@ namespace dtree
 						}
 						else
 						{
-							return std::get<2>(t1) < std::get<1>(t2)
+							return std::get<2>(t1) < std::get<1>(t2);
 						}
 					}
 					else
