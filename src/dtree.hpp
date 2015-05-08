@@ -126,9 +126,6 @@ namespace dtree
 	private:
 		void update_confusion()
 		{
-			// Reset the confusion
-			confusion = 1;
-
 			int pos_counts = 0, neg_counts = 0;
 			for (const auto& entry : _data)
 			{
@@ -147,7 +144,7 @@ namespace dtree
 				}
 			}
 
-			confusion -= std::pow((pos_counts / (double)_data.size()), 2) + std::pow((neg_counts / (double)_data.size()), 2);
+			confusion = 1 - std::pow((pos_counts / (double)_data.size()), 2) - std::pow((neg_counts / (double)_data.size()), 2);
 		}
 
 		// > threshold
@@ -192,7 +189,7 @@ namespace dtree
 				}
 			}
 
-			return (1 - std::pow((pos_counts / (double)_data.size()), 2) - std::pow((neg_counts / (double)_data.size()), 2));
+			return (1 - ((std::pow(pos_counts, 2) + std::pow(neg_counts, 2)) / std::pow((pos_counts + neg_counts), 2)));
 		}
 
 		// < threshold
@@ -234,7 +231,7 @@ namespace dtree
 				}
 			}
 
-			return (1 - std::pow((pos_counts / (double)_data.size()), 2) - std::pow((neg_counts / (double)_data.size()), 2));
+			return (1 - ((std::pow(pos_counts, 2) + std::pow(neg_counts, 2)) / std::pow((pos_counts + neg_counts), 2)));
 		}
 
 		/*
@@ -314,7 +311,7 @@ namespace dtree
 		 * Parameter: target index
 		 * Return: separate at which threshold
 		 */
-		 /*
+		/*
 		double separate(int feature_index, dataset& pos, dataset& neg)
 		{
 			auto sequence = get_thresholds_sequence(feature_index);
@@ -452,10 +449,10 @@ namespace dtree
 			for (const auto& threshold : thresholds)
 			{
 				int positive_count, negative_count;
-				double pos = positive_confusion(feature_index, threshold, positive_count);
-				double neg = negative_confusion(feature_index, threshold, negative_count);
+				double pos_confusion = positive_confusion(feature_index, threshold, positive_count);
+				double neg_confusion = negative_confusion(feature_index, threshold, negative_count);
 
-				double tmp_confusion = (pos * positive_count + neg * negative_count) / _data.size();
+				double tmp_confusion = (pos_confusion * positive_count + neg_confusion * negative_count) / _data.size();
 
 				sequence.push_back(std::make_pair(tmp_confusion, threshold));
 
@@ -699,44 +696,23 @@ namespace dtree
 					std::cout << "confusion=" << std::get<1>(branch) << " at threshold=" << current->threshold << std::endl;
 					std::cout << std::endl;
 
-					std::cout << "Review the positive dataset" << std::endl;
-					std::cout << pos << std::endl;
-
-					if (std::isnan(pos.get_confusion()))
+					if (std::isnan(pos.get_confusion()) || std::isnan(neg.get_confusion()))
 					{
 						std::cout << "...INVALID" << std::endl;
 						std::cout << "********************" << std::endl;
 						continue;
 					}
-
-					std::cout << "Review the negative dataset" << std::endl;
-					std::cout << neg << std::endl;
-
-					if (std::isnan(neg.get_confusion()))
+					else
 					{
-						std::cout << "...INVALID" << std::endl;
+						std::cout << "Review the positive dataset" << std::endl;
+						std::cout << pos << std::endl;
+						std::cout << "Review the negative dataset" << std::endl;
+						std::cout << neg << std::endl;
 						std::cout << "********************" << std::endl;
-						continue;
 					}
 
 					// Check whether next value needs to be tested
-					leaf_reached = false;
-					current->positive_child = predict(pos);
-					if (!leaf_reached)
-					{
-						continue;
-					}
-
-					leaf_reached = false;
-					current->negative_child = predict(neg);
-					if (!leaf_reached)
-					{
-						continue;
-					}
-
-					std::cout << "********************" << std::endl;
-
-					if (leaf_reached)
+					if (((current->positive_child = predict(pos)) != NULL) && ((current->negative_child = predict(neg)) != NULL))
 					{
 						break;
 					}
