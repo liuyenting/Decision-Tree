@@ -184,11 +184,11 @@ namespace dtree
 
 					total_counter++;
 
-					if (value_to_test > 0)
+					if (entry.conclusion > 0)
 					{
 						pos_counts++;
 					}
-					else if (value_to_test < 0)
+					else if (entry.conclusion < 0)
 					{
 						neg_counts++;
 					}
@@ -232,12 +232,8 @@ namespace dtree
 					}
 					else
 					{
-						
-						if (entry.features.count(index) == 0)
-						{
-							value_to_test = 0;
-						}
-						else
+						double value_to_test = 0;
+						if (entry.features.count(index) != 0)
 						{
 							value_to_test = entry.features.at(index);
 						}
@@ -251,7 +247,6 @@ namespace dtree
 
 					total_counter++;
 
-					// TODO: Review the code at here.
 					if (entry.conclusion > 0)
 					{
 						pos_counts++;
@@ -316,8 +311,7 @@ namespace dtree
 			return confusion;
 		}
 
-		// oor-patch-3
-		int get_conclusion() const
+		std::pair<int, int> get_conclusion_counts() const
 		{
 			int pos_counts = 0, neg_counts = 0;
 			for (const auto& entry : _data)
@@ -337,13 +331,26 @@ namespace dtree
 				}
 			}
 
-			if (pos_counts > neg_counts)
+			return std::make_pair(pos_counts, neg_counts);
+		}
+
+		int get_conclusion() const
+		{
+			auto counts = get_conclusion_counts();
+
+			// (pos_counts, neg_counts)
+			if (std::get<0>(counts) > std::get<1>(counts))
 			{
 				return 1;
 			}
-			else
+			else if (std::get<0>(counts) < std::get<1>(counts))
 			{
 				return -1;
+			}
+			else
+			{
+				std::srand(std::time(0));
+				return ((std::rand() % 2) ? 1 : -1);
 			}
 		}
 
@@ -475,8 +482,10 @@ namespace dtree
 				std::cout << "////////////////////" << std::endl;
 
 				double tmp_confusion = (pos_confusion * pos_counts + neg_confusion * neg_counts) / _data.size();
-
-				sequence.push_back(std::make_pair(tmp_confusion, threshold));
+				if (!std::isnan(tmp_confusion))
+				{
+					sequence.push_back(std::make_pair(tmp_confusion, threshold));
+				}
 			}
 
 			return sequence;
@@ -611,7 +620,7 @@ namespace dtree
 		{
 			root = predict(_data);
 
-			if (!leaf_reached)
+			if (root == NULL)
 			{
 				throw std::runtime_error("predict(): No solution.");
 				std::exit(EXIT_FAILURE);
@@ -632,38 +641,7 @@ namespace dtree
 
 			if ((data.get_confusion() <= _epsilon) || !data.can_branch())
 			{
-				int pos_counts = 0, neg_counts = 0;
-				for (const auto& d : data)
-				{
-					if (d.conclusion > 0)
-					{
-						pos_counts++;
-					}
-					else if (d.conclusion < 0)
-					{
-						neg_counts++;
-					}
-					else
-					{
-						throw std::domain_error("negative_confusion(): Undefined conclusion found during the refresh.");
-						std::exit(EXIT_FAILURE);
-					}
-				}
-
-				if (pos_counts > neg_counts)
-				{
-					current->conclusion = 1;
-				}
-				else if (pos_counts < neg_counts)
-				{
-					current->conclusion = -1;
-				}
-				else
-				{
-					std::srand(std::time(0));
-					current->conclusion = (std::rand() % 2) ? 1 : -1;
-				}
-
+				current->conclusion = data.get_conclusion();
 				current->positive_child = current->negative_child = NULL;
 			}
 			else
@@ -695,7 +673,6 @@ namespace dtree
 				}
 				std::cout << std::endl;
 
-				// oor-patch-2
 				std::sort(branches.begin(), branches.end(), [](std::tuple<int, double, double> const & t1, std::tuple<int, double, double> const & t2)
 				{
 					// Compared using the confusion -> threshold -> index, ascending
@@ -716,7 +693,6 @@ namespace dtree
 					}
 				});
 
-				// oor-patch-2
 				for (const auto& branch : branches)
 				{
 					current->feature_index = std::get<0>(branch);
