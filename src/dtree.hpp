@@ -771,13 +771,13 @@ namespace dtree
 		{
 			if ((leaf->positive_child == NULL) && (leaf->negative_child == NULL))
 			{
+				std::cout << "...leaf, conclusion=" << leaf->conclusion << std::endl;
+				
 				for (int i = 0; i < indent; i++)
 				{
 					stream << INDENT;
 				}
 				stream << "return " << leaf->conclusion << ';' << std::endl;
-
-				return;
 			}
 			else if (leaf->positive_child == NULL)
 			{
@@ -791,6 +791,8 @@ namespace dtree
 			}
 			else
 			{
+				std::cout << "indent=" << indent << "\t, index=" << leaf->feature_index << "\t, threshold=" << leaf->threshold << std::endl;
+
 				for (int i = 0; i < indent; i++)
 				{
 					stream << INDENT;
