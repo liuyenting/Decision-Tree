@@ -20,3 +20,4 @@ bin/*
 # Temporary debug files
 out
 err
+tree_pred_func.cpp
