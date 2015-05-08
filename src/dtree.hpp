@@ -14,6 +14,7 @@
 #include <limits>
 #include <tuple>
 #include <algorithm>
+#include <ctime>
 
 namespace dtree
 {
@@ -157,7 +158,8 @@ namespace dtree
 			{
 				try
 				{
-					if(threshold == 0)
+					double value_to_test = 0;
+					if (threshold == 0)
 					{
 						// Filter for entry with default feature
 						// Perform the counting if (entry.features.count(index) != 0)
@@ -168,12 +170,7 @@ namespace dtree
 					}
 					else
 					{
-						double value_to_test;
-						if (entry.features.count(index) == 0)
-						{
-							value_to_test = 0;
-						}
-						else
+						if (entry.features.count(index) != 0)
 						{
 							value_to_test = entry.features.at(index);
 						}
@@ -187,11 +184,11 @@ namespace dtree
 
 					total_counter++;
 
-					if (entry.conclusion > 0)
+					if (value_to_test > 0)
 					{
 						pos_counts++;
 					}
-					else if (entry.conclusion < 0)
+					else if (value_to_test < 0)
 					{
 						neg_counts++;
 					}
@@ -224,7 +221,7 @@ namespace dtree
 			{
 				try
 				{
-					if(threshold == 0)
+					if (threshold == 0)
 					{
 						// Filter for entry with default feature
 						// Perform the counting if (entry.features.count(index) == 0)
@@ -235,7 +232,7 @@ namespace dtree
 					}
 					else
 					{
-						double value_to_test;
+						
 						if (entry.features.count(index) == 0)
 						{
 							value_to_test = 0;
@@ -254,6 +251,7 @@ namespace dtree
 
 					total_counter++;
 
+					// TODO: Review the code at here.
 					if (entry.conclusion > 0)
 					{
 						pos_counts++;
@@ -466,17 +464,17 @@ namespace dtree
 			std::vector<std::pair<double, double> > sequence;
 			for (const auto& threshold : thresholds)
 			{
-				int positive_count, negative_count;
-				double pos_confusion = positive_confusion(feature_index, threshold, positive_count);
-				double neg_confusion = negative_confusion(feature_index, threshold, negative_count);
+				int pos_counts, neg_counts;
+				double pos_confusion = positive_confusion(feature_index, threshold, pos_counts);
+				double neg_confusion = negative_confusion(feature_index, threshold, neg_counts);
 
 				std::cout << "////////////////////" << std::endl;
-				std::cout << "pos_count=" << positive_count << ", neg_count=" << negative_count << std::endl;
+				std::cout << "pos_count=" << pos_counts << ", neg_count=" << neg_counts << std::endl;
 				std::cout << "pos_confusion=" << pos_confusion << ", neg_confusion" << neg_confusion << std::endl;
 				std::cout << "data_size=" << _data.size() << std::endl;
 				std::cout << "////////////////////" << std::endl;
 
-				double tmp_confusion = (pos_confusion * positive_count + neg_confusion * negative_count) / _data.size();
+				double tmp_confusion = (pos_confusion * pos_counts + neg_confusion * neg_counts) / _data.size();
 
 				sequence.push_back(std::make_pair(tmp_confusion, threshold));
 			}
@@ -608,10 +606,6 @@ namespace dtree
 		/*
 		 * Prediction function and its helper functions.
 		 */
-	private:
-		bool leaf_reached;
-		double least_confusion = 1;
-
 	public:
 		void predict()
 		{
@@ -638,11 +632,39 @@ namespace dtree
 
 			if ((data.get_confusion() <= _epsilon) || !data.can_branch())
 			{
-				current->conclusion = data[0];
-				current->positive_child = current->negative_child = NULL;
+				int pos_counts = 0, neg_counts = 0;
+				for (const auto& d : data)
+				{
+					if (d.conclusion > 0)
+					{
+						pos_counts++;
+					}
+					else if (d.conclusion < 0)
+					{
+						neg_counts++;
+					}
+					else
+					{
+						throw std::domain_error("negative_confusion(): Undefined conclusion found during the refresh.");
+						std::exit(EXIT_FAILURE);
+					}
+				}
 
-				// oor-patch-2
-				leaf_reached = true;
+				if (pos_counts > neg_counts)
+				{
+					current->conclusion = 1;
+				}
+				else if (pos_counts < neg_counts)
+				{
+					current->conclusion = -1;
+				}
+				else
+				{
+					std::srand(std::time(0));
+					current->conclusion = (std::rand() % 2) ? 1 : -1;
+				}
+
+				current->positive_child = current->negative_child = NULL;
 			}
 			else
 			{
