@@ -25,6 +25,8 @@ int main(int argc, char *argv[])
 	dtree::if_tree itree(matrix, std::stoi(argv[2]));
 	itree.predict();
 
+	std::cout << ">>> Complete tree construction. <<<" << std::endl;
+
 	std::ofstream output("tree_pred_func.cpp");
 	itree.generate_file(output);
 	output.close();

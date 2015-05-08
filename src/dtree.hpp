@@ -477,7 +477,7 @@ namespace dtree
 
 				std::cout << "////////////////////" << std::endl;
 				std::cout << "pos_count=" << pos_counts << ", neg_count=" << neg_counts << std::endl;
-				std::cout << "pos_confusion=" << pos_confusion << ", neg_confusion" << neg_confusion << std::endl;
+				std::cout << "pos_confusion=" << pos_confusion << ", neg_confusion=" << neg_confusion << std::endl;
 				std::cout << "data_size=" << _data.size() << std::endl;
 				std::cout << "////////////////////" << std::endl;
 
