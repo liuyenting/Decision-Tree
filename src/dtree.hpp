@@ -404,18 +404,14 @@ namespace dtree
 				}
 				catch (std::out_of_range e)
 				{
-					/*
-					throw std::out_of_range("find_least_confusion(): Invalid feature index.");
-					std::exit(EXIT_FAILURE);
-					*/
-					// oor-patch
+					// Default value as threshold.
 					values.insert(0);
 				}
 			}
 
 			if (values.size() == 0)
 			{
-				throw std::runtime_error("find_least_confusion(): No values in the set to build the threshold table. Force confusion as 1.");
+				throw std::runtime_error("find_least_confusion(): No values in the set to build the threshold table.");
 				std::exit(EXIT_FAILURE);
 			}
 
@@ -439,6 +435,8 @@ namespace dtree
 				}
 			}
 
+			// TODO: Push all the possible thresholds in series to an array
+			// Note: Combine the confusion and threshold into a pair.
 			double least_confusion = 1;
 			for (const auto& t : thresholds)
 			{
@@ -643,16 +641,6 @@ namespace dtree
 
 					std::cout << "i=" << i << ",\tconfusion=" << tmp_confusion << std::endl;
 
-					// oor-patch-2
-					/*
-					if (tmp_confusion < least_confusion)
-					{
-						least_confusion = tmp_confusion;
-
-						target_index = i;
-						target_threshold = tmp_threshold;
-					}
-					*/
 					branches.push_back(std::make_tuple(i, tmp_confusion, tmp_threshold));
 				}
 				std::cout << std::endl;
