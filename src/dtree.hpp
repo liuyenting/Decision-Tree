@@ -779,6 +779,16 @@ namespace dtree
 
 				return;
 			}
+			else if (leaf->positive_child == NULL)
+			{
+				throw std::runtime_error("generate_file(): Positive child is a null pointer.");
+				std::exit(EXIT_FAILURE);
+			}
+			else if (leaf->negative_child == NULL)
+			{
+				throw std::runtime_error("generate_file(): Negative child is a null pointer.");
+				std::exit(EXIT_FAILURE);
+			}
 			else
 			{
 				for (int i = 0; i < indent; i++)
@@ -786,10 +796,7 @@ namespace dtree
 					stream << INDENT;
 				}
 				stream << "if(attr[" << leaf->feature_index << "] > " << leaf->threshold << ") {" << std::endl;
-				if (leaf->positive_child != NULL)
-				{
-					generate_file(stream, leaf->positive_child, indent + 1);
-				}
+				generate_file(stream, leaf->positive_child, indent + 1);
 				for (int i = 0; i < indent; i++)
 				{
 					stream << INDENT;
