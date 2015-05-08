@@ -148,44 +148,66 @@ namespace dtree
 		}
 
 		// > threshold
-		double positive_confusion(int index, double threshold, int& counter) const
+		double positive_confusion(int index, double threshold, int& total_counter) const
 		{
-			counter = 0;
+			total_counter = 0;
 
 			int pos_counts = 0, neg_counts = 0;
 			for (const auto& entry : _data)
 			{
 				try
 				{
-					// oor-patch
-					if ((entry.features.at(index) > threshold) && (threshold != 0))
+					if(threshold == 0)
 					{
-						counter++;
-
-						if (entry.conclusion > 0)
+						// Filter for entry with default feature
+						// Perform the counting if (entry.features.count(index) != 0)
+						if (entry.features.count(index) == 0)
 						{
-							pos_counts++;
+							continue;
 						}
-						else if (entry.conclusion < 0)
+					}
+					else
+					{
+						double value_to_test;
+						if (entry.features.count(index) == 0)
 						{
-							neg_counts++;
+							value_to_test = 0;
 						}
 						else
 						{
-							throw std::domain_error("positive_confusion(): Undefined conclusion found during the refresh.");
-							std::exit(EXIT_FAILURE);
+							value_to_test = entry.features.at(index);
 						}
+
+						// Perform the counting if (value_to_test > threshold)
+						if (value_to_test < threshold)
+						{
+							continue;
+						}
+					}
+
+					total_counter++;
+
+					if (entry.conclusion > 0)
+					{
+						pos_counts++;
+					}
+					else if (entry.conclusion < 0)
+					{
+						neg_counts++;
+					}
+					else
+					{
+						throw std::domain_error("positive_confusion(): Undefined conclusion found during the refresh.");
+						std::exit(EXIT_FAILURE);
 					}
 				}
 				catch (std::out_of_range e)
 				{
 					// oor-patch
-					/*
 					std::stringstream stream;
 					stream << "positive_confusion(): Invalid feature index \"" << index << "\"";
 					throw std::out_of_range(stream.str());
 					std::exit(EXIT_FAILURE);
-					*/
 				}
 			}
 
@@ -193,33 +215,57 @@ namespace dtree
 		}
 
 		// < threshold
-		double negative_confusion(int index, double threshold, int& counter) const
+		double negative_confusion(int index, double threshold, int& total_counter) const
 		{
-			counter = 0;
+			total_counter = 0;
 
 			int pos_counts = 0, neg_counts = 0;
 			for (const auto& entry : _data)
 			{
 				try
 				{
-					// oor-patch
-					if (((threshold == 0) && (entry.features.count(index) == 0)) || ((threshold != 0) && (entry.features.at(index) < threshold)))
+					if(threshold == 0)
 					{
-						counter++;
-
-						if (entry.conclusion > 0)
+						// Filter for entry with default feature
+						// Perform the counting if (entry.features.count(index) == 0)
+						if (entry.features.count(index) != 0)
 						{
-							pos_counts++;
+							continue;
 						}
-						else if (entry.conclusion < 0)
+					}
+					else
+					{
+						double value_to_test;
+						if (entry.features.count(index) == 0)
 						{
-							neg_counts++;
+							value_to_test = 0;
 						}
 						else
 						{
-							throw std::domain_error("negative_confusion(): Undefined conclusion found during the refresh.");
-							std::exit(EXIT_FAILURE);
+							value_to_test = entry.features.at(index);
 						}
+
+						// Perform the counting if (value_to_test < threshold)
+						if (value_to_test > threshold)
+						{
+							continue;
+						}
+					}
+
+					total_counter++;
+
+					if (entry.conclusion > 0)
+					{
+						pos_counts++;
+					}
+					else if (entry.conclusion < 0)
+					{
+						neg_counts++;
+					}
+					else
+					{
+						throw std::domain_error("negative_confusion(): Undefined conclusion found during the refresh.");
+						std::exit(EXIT_FAILURE);
 					}
 				}
 				catch (std::out_of_range e)
@@ -231,7 +277,7 @@ namespace dtree
 				}
 			}
 
-			return (1 - ((std::pow(pos_counts, 2) + std::pow(neg_counts, 2)) / std::pow((pos_counts + neg_counts), 2)));
+			return (1 - ((std::pow(pos_counts, 2) + std::pow(neg_counts, 2)) / std::pow(total_counter, 2)));
 		}
 
 		/*
@@ -301,7 +347,7 @@ namespace dtree
 			{
 				return -1;
 			}
-		}		
+		}
 
 		/*
 		 * Separate the dataset into two according to the lowest confusion value in designated feature.
