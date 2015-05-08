@@ -314,15 +314,23 @@ namespace dtree
 		 * Parameter: target index
 		 * Return: separate at which threshold
 		 */
+		 /*
 		double separate(int feature_index, dataset& pos, dataset& neg)
 		{
-			double target_threshold;
-			find_least_confusion(feature_index, target_threshold);
-
+			auto sequence = get_thresholds_sequence(feature_index);
+			double target_threshold = -1, least_confusion = 1;
+			for (const auto& s : sequence)
+			{
+				if (std::get<0>(s) < least_confusion)
+				{
+					target_threshold = std::get<1>(s);
+				}
+			}
 			separate(feature_index, target_threshold, pos, neg);
 
 			return target_threshold;
 		}
+		*/
 
 		/*
 		 * Confusion related operations for current dataset.
@@ -350,7 +358,7 @@ namespace dtree
 			}
 		}
 
-	private:
+	public:
 		/*
 		 * Parameter: target index, separate at which threshold
 		 * Return: None
@@ -391,11 +399,11 @@ namespace dtree
 	public:
 		/*
 		 * Parameter: target index
-		 * Return: lowest confusion, the threshold that creates lowest confusion
+		 * Return: (confusion, threshold)
 		 */
-		double find_least_confusion(int feature_index, double& target_threshold) const
+		std::vector<std::pair<double, double> > get_thresholds_sequence(int feature_index)
 		{
-			std::set<int> values;
+			std::set<double> values;
 			for (const auto& e : _data)
 			{
 				try
@@ -411,7 +419,7 @@ namespace dtree
 
 			if (values.size() == 0)
 			{
-				throw std::runtime_error("find_least_confusion(): No values in the set to build the threshold table.");
+				throw std::runtime_error("get_thresholds_sequence(): No values in the set to build the threshold table.");
 				std::exit(EXIT_FAILURE);
 			}
 
@@ -437,23 +445,33 @@ namespace dtree
 
 			// TODO: Push all the possible thresholds in series to an array
 			// Note: Combine the confusion and threshold into a pair.
+			/*
 			double least_confusion = 1;
-			for (const auto& t : thresholds)
+			*/
+			std::vector<std::pair<double, double> > sequence;
+			for (const auto& threshold : thresholds)
 			{
 				int positive_count, negative_count;
-				double pos = positive_confusion(feature_index, t, positive_count);
-				double neg = negative_confusion(feature_index, t, negative_count);
+				double pos = positive_confusion(feature_index, threshold, positive_count);
+				double neg = negative_confusion(feature_index, threshold, negative_count);
 
-				double tmp = (pos * positive_count + neg * negative_count) / _data.size();
+				double tmp_confusion = (pos * positive_count + neg * negative_count) / _data.size();
 
+				sequence.push_back(std::make_pair(tmp_confusion, threshold));
+
+				/*
 				if (tmp < least_confusion)
 				{
 					least_confusion = tmp;
 					target_threshold = t;
 				}
+				*/
 			}
 
+			/*
 			return least_confusion;
+			*/
+			return sequence;
 		}
 
 		/*
@@ -635,13 +653,13 @@ namespace dtree
 
 				for (int i = range.min; i <= range.max; i++)
 				{
-					double tmp_threshold;
-					// TODO: Using threshold sequence.
-					double tmp_confusion = data.find_least_confusion(i, tmp_threshold);
-
-					std::cout << "i=" << i << ",\tconfusion=" << tmp_confusion << std::endl;
-
-					branches.push_back(std::make_tuple(i, tmp_confusion, tmp_threshold));
+					auto sequence = data.get_thresholds_sequence(i);
+					std::cout << "i=" << i << std::endl;
+					for (const auto& s : sequence)
+					{
+						std::cout << " -> confusion=" << std::get<0>(s) << ",\tthreshold=" << std::get<1>(s) << std::endl;
+						branches.push_back(std::make_tuple(i, std::get<0>(s), std::get<1>(s)));
+					}
 				}
 				std::cout << std::endl;
 
@@ -651,13 +669,13 @@ namespace dtree
 					// Compared using the confusion -> threshold -> index, ascending
 					if (std::get<1>(t1) == std::get<1>(t2))
 					{
-						if (std::get<2>(t1) == std::get<2>(t2))
+						if (std::get<0>(t1) == std::get<0>(t2))
 						{
-							return std::get<0>(t1) < std::get<0>(t2);
+							return std::get<2>(t1) < std::get<2>(t2);
 						}
 						else
 						{
-							return std::get<2>(t1) < std::get<1>(t2);
+							return std::get<0>(t1) < std::get<0>(t2);
 						}
 					}
 					else
@@ -670,13 +688,12 @@ namespace dtree
 				for (const auto& branch : branches)
 				{
 					current->feature_index = std::get<0>(branch);
+					current->threshold = std::get<2>(branch);
 
 					std::cout << "Separate the dataset using feature \"" << current->feature_index << "\"" << std::endl;
 
 					dataset pos, neg;
-					data.separate(current->feature_index, pos, neg);
-
-					current->threshold = std::get<2>(branch);
+					data.separate(current->feature_index, current->threshold, pos, neg);
 
 					// TODO: Add back for least_confusion tracking.
 					std::cout << "confusion=" << std::get<1>(branch) << " at threshold=" << current->threshold << std::endl;
