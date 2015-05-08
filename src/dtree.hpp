@@ -301,60 +301,11 @@ namespace dtree
 			{
 				return -1;
 			}
-		}
+		}		
 
 		/*
 		 * Separate the dataset into two according to the lowest confusion value in designated feature.
 		 */
-	public:
-		/*
-		 * Parameter: target index
-		 * Return: separate at which threshold
-		 */
-		/*
-		double separate(int feature_index, dataset& pos, dataset& neg)
-		{
-			auto sequence = get_thresholds_sequence(feature_index);
-			double target_threshold = -1, least_confusion = 1;
-			for (const auto& s : sequence)
-			{
-				if (std::get<0>(s) < least_confusion)
-				{
-					target_threshold = std::get<1>(s);
-				}
-			}
-			separate(feature_index, target_threshold, pos, neg);
-
-			return target_threshold;
-		}
-		*/
-
-		/*
-		 * Confusion related operations for current dataset.
-		 */
-	public:
-		range get_feature_range() const
-		{
-			return _feature_range;
-		}
-
-		void update_feature_range()
-		{
-			_feature_range.reset();
-
-			for (const auto& e : _data)
-			{
-				if (e.features.begin()->first < _feature_range.min)
-				{
-					_feature_range.min = e.features.begin()->first;
-				}
-				else if (e.features.rbegin()->first > _feature_range.max)
-				{
-					_feature_range.max = e.features.rbegin()->first;
-				}
-			}
-		}
-
 	public:
 		/*
 		 * Parameter: target index, separate at which threshold
@@ -391,6 +342,32 @@ namespace dtree
 
 			pos = pos_container;
 			neg = neg_container;
+		}
+
+		/*
+		 * Confusion related operations for current dataset.
+		 */
+	public:
+		range get_feature_range() const
+		{
+			return _feature_range;
+		}
+
+		void update_feature_range()
+		{
+			_feature_range.reset();
+
+			for (const auto& e : _data)
+			{
+				if (e.features.begin()->first < _feature_range.min)
+				{
+					_feature_range.min = e.features.begin()->first;
+				}
+				else if (e.features.rbegin()->first > _feature_range.max)
+				{
+					_feature_range.max = e.features.rbegin()->first;
+				}
+			}
 		}
 
 	public:
