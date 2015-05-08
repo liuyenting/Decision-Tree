@@ -463,11 +463,6 @@ namespace dtree
 				}
 			}
 
-			// TODO: Push all the possible thresholds in series to an array
-			// Note: Combine the confusion and threshold into a pair.
-			/*
-			double least_confusion = 1;
-			*/
 			std::vector<std::pair<double, double> > sequence;
 			for (const auto& threshold : thresholds)
 			{
@@ -475,22 +470,17 @@ namespace dtree
 				double pos_confusion = positive_confusion(feature_index, threshold, positive_count);
 				double neg_confusion = negative_confusion(feature_index, threshold, negative_count);
 
+				std::cout << "////////////////////" << std::endl;
+				std::cout << "pos_count=" << positive_count << ", neg_count=" << negative_count << std::endl;
+				std::cout << "pos_confusion=" << pos_confusion << ", neg_confusion" << neg_confusion << std::endl;
+				std::cout << "data_size=" << _data.size() << std::endl;
+				std::cout << "////////////////////" << std::endl;
+
 				double tmp_confusion = (pos_confusion * positive_count + neg_confusion * negative_count) / _data.size();
 
 				sequence.push_back(std::make_pair(tmp_confusion, threshold));
-
-				/*
-				if (tmp < least_confusion)
-				{
-					least_confusion = tmp;
-					target_threshold = t;
-				}
-				*/
 			}
 
-			/*
-			return least_confusion;
-			*/
 			return sequence;
 		}
 
