@@ -752,6 +752,7 @@ namespace dtree
 				if ((current->positive_child == NULL) || (current->negative_child == NULL))
 				{
 					delete current;
+					current = NULL;
 				}
 			}
 
