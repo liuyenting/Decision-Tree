@@ -493,11 +493,11 @@ namespace dtree
 				double pos_confusion = positive_confusion(feature_index, threshold, pos_counts);
 				double neg_confusion = negative_confusion(feature_index, threshold, neg_counts);
 
-				std::cout << "////////////////////" << std::endl;
-				std::cout << "pos_count=" << pos_counts << ", neg_count=" << neg_counts << std::endl;
-				std::cout << "pos_confusion=" << pos_confusion << ", neg_confusion=" << neg_confusion << std::endl;
-				std::cout << "data_size=" << _data.size() << std::endl;
-				std::cout << "////////////////////" << std::endl;
+				std::cerr << "////////////////////" << std::endl;
+				std::cerr << "pos_count=" << pos_counts << ", neg_count=" << neg_counts << std::endl;
+				std::cerr << "pos_confusion=" << pos_confusion << ", neg_confusion=" << neg_confusion << std::endl;
+				std::cerr << "data_size=" << _data.size() << std::endl;
+				std::cerr << "////////////////////" << std::endl;
 
 				double tmp_confusion = (pos_confusion * pos_counts + neg_confusion * neg_counts) / _data.size();
 				if (!std::isnan(tmp_confusion))
@@ -518,7 +518,7 @@ namespace dtree
 		 */
 		friend std::ostream& operator<<(std::ostream & stream, dataset & d)
 		{
-			std::cout << "confusion = " << std::fixed << std::setprecision(6) << d.confusion;
+			std::cerr << "confusion = " << std::fixed << std::setprecision(6) << d.confusion;
 			for (auto itr = d._data.begin(); itr != d._data.end(); ++itr)
 			{
 				stream << std::endl;
@@ -675,21 +675,21 @@ namespace dtree
 				 */
 				std::vector<std::tuple<int, double, double> > branches;
 
-				std::cout << "********************" << std::endl;
-				std::cout << "range=[" << range.min << ", " << range.max << "]" << std::endl;
-				std::cout << std::endl;
+				std::cerr << "********************" << std::endl;
+				std::cerr << "range=[" << range.min << ", " << range.max << "]" << std::endl;
+				std::cerr << std::endl;
 
 				for (int i = range.min; i <= range.max; i++)
 				{
 					auto sequence = data.get_thresholds_sequence(i);
-					std::cout << "i=" << i << std::endl;
+					std::cerr << "i=" << i << std::endl;
 					for (const auto& s : sequence)
 					{
-						std::cout << " -> confusion=" << std::get<0>(s) << ",\tthreshold=" << std::get<1>(s) << std::endl;
+						std::cerr << " -> confusion=" << std::get<0>(s) << ",\tthreshold=" << std::get<1>(s) << std::endl;
 						branches.push_back(std::make_tuple(i, std::get<0>(s), std::get<1>(s)));
 					}
 				}
-				std::cout << std::endl;
+				std::cerr << std::endl;
 
 				std::sort(branches.begin(), branches.end(), [](std::tuple<int, double, double> const & t1, std::tuple<int, double, double> const & t2)
 				{
@@ -716,28 +716,28 @@ namespace dtree
 					current->feature_index = std::get<0>(branch);
 					current->threshold = std::get<2>(branch);
 
-					std::cout << "Separate the dataset using feature \"" << current->feature_index << "\"" << std::endl;
+					std::cerr << "Separate the dataset using feature \"" << current->feature_index << "\"" << std::endl;
 
 					dataset pos, neg;
 					data.separate(current->feature_index, current->threshold, pos, neg);
 
 					// TODO: Add back for least_confusion tracking.
-					std::cout << "confusion=" << std::get<1>(branch) << " at threshold=" << current->threshold << std::endl;
-					std::cout << std::endl;
+					std::cerr << "confusion=" << std::get<1>(branch) << " at threshold=" << current->threshold << std::endl;
+					std::cerr << std::endl;
 
 					if (std::isnan(pos.get_confusion()) || std::isnan(neg.get_confusion()))
 					{
-						std::cout << "...INVALID" << std::endl;
-						std::cout << "********************" << std::endl;
+						std::cerr << "...INVALID" << std::endl;
+						std::cerr << "********************" << std::endl;
 						continue;
 					}
 					else
 					{
-						std::cout << "Review the positive dataset" << std::endl;
-						std::cout << pos << std::endl;
-						std::cout << "Review the negative dataset" << std::endl;
-						std::cout << neg << std::endl;
-						std::cout << "********************" << std::endl;
+						std::cerr << "Review the positive dataset" << std::endl;
+						std::cerr << pos << std::endl;
+						std::cerr << "Review the negative dataset" << std::endl;
+						std::cerr << neg << std::endl;
+						std::cerr << "********************" << std::endl;
 					}
 
 					// Check whether next value needs to be tested
@@ -789,7 +789,7 @@ namespace dtree
 		{
 			if ((leaf->positive_child == NULL) && (leaf->negative_child == NULL))
 			{
-				std::cout << "...leaf, conclusion=" << leaf->conclusion << std::endl;
+				std::cerr << "...leaf, conclusion=" << leaf->conclusion << std::endl;
 
 				for (int i = 0; i < indent; i++)
 				{
@@ -809,7 +809,7 @@ namespace dtree
 			}
 			else
 			{
-				std::cout << "indent=" << indent << "\t, index=" << leaf->feature_index << "\t, threshold=" << leaf->threshold << std::endl;
+				std::cerr << "indent=" << indent << "\t, index=" << leaf->feature_index << "\t, threshold=" << leaf->threshold << std::endl;
 
 				for (int i = 0; i < indent; i++)
 				{
