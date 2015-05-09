@@ -370,24 +370,42 @@ namespace dtree
 			{
 				try
 				{
-					if (entry.features.at(feature_index) > threshold)
+					if (threshold == 0)
 					{
-						pos_container.push_back(entry);
+						// Filter for entry with default feature
+						// Perform the counting if (entry.features.count(index) == 0)
+						if (entry.features.count(feature_index) != 0)
+						{
+							pos_container.push_back(entry);
+						}
+						else
+						{
+							neg_container.push_back(entry);
+						}
 					}
 					else
 					{
-						neg_container.push_back(entry);
+						double value_to_test = 0;
+						if (entry.features.count(feature_index) != 0)
+						{
+							value_to_test = entry.features.at(feature_index);
+						}
+
+						// Perform the counting if (value_to_test < threshold)
+						if (value_to_test > threshold)
+						{
+							pos_container.push_back(entry);
+						}
+						else
+						{
+							neg_container.push_back(entry);
+						}
 					}
 				}
 				catch (std::out_of_range e)
 				{
-					// oor-patch
-					neg_container.push_back(entry);
-
-					/*
 					throw std::out_of_range("separate(): Invalid feature index.");
 					std::exit(EXIT_FAILURE);
-					*/
 				}
 			}
 
@@ -772,7 +790,7 @@ namespace dtree
 			if ((leaf->positive_child == NULL) && (leaf->negative_child == NULL))
 			{
 				std::cout << "...leaf, conclusion=" << leaf->conclusion << std::endl;
-				
+
 				for (int i = 0; i < indent; i++)
 				{
 					stream << INDENT;
