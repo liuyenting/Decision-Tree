@@ -746,6 +746,13 @@ namespace dtree
 						break;
 					}
 				}
+
+				// If every situation in this scenario leads to partially nulled nodes...
+				// ...discard this result.
+				if ((current->positive_child == NULL) || (current->negative_child == NULL))
+				{
+					delete current;
+				}
 			}
 
 			return current;
