@@ -1,3 +1,6 @@
+SUBJECT = heart
+EPSILON = 0
+
 # ====================
 # Envirnoment setup
 # ====================
@@ -60,13 +63,21 @@ $(OBJ_DIR)%.o: $(SRC_DIR)%.cpp
 
 run:
 ifneq ($(wildcard $(BIN_DIR)$(MAIN)),)
-	@./$(BIN_DIR)$(MAIN) $(DAT_DIR)heart/heart.train 0
+	@./$(BIN_DIR)$(MAIN) $(DAT_DIR)$(SUBJECT)/$(SUBJECT).train $(EPSILON)
 else ifneq ($(wildcard $(BIN_DIR)$(MAIN)_debug),)
-	@./$(BIN_DIR)$(MAIN)_debug $(DAT_DIR)heart.test 0.1
+	@./$(BIN_DIR)$(MAIN)_debug $(DAT_DIR)$(SUBJECT)/$(SUBJECT).train $(EPSILON)
 else
 	@echo "Please execute 'make all', 'make build' or 'make debug' first."
 endif
 
+test: migrate
+test:
+	@echo "Executing TA's Makefile..."
+	@cd ../hw4_ta && make run_tree && \
+	echo "====================" && \
+	cat tree_prediction.txt
+	@echo "===================="
+	
 migrate:
 	@echo "Copy binary into TA's project..."
 	@cp ./$(BIN_DIR)$(MAIN) ../hw4_ta/
