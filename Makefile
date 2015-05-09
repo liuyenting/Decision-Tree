@@ -1,4 +1,4 @@
-SUBJECT = heart
+SUBJECT = htlin
 EPSILON = 0
 
 # ====================
@@ -77,7 +77,7 @@ test:
 	echo "====================" && \
 	cat tree_prediction.txt
 	@echo "===================="
-	
+
 migrate:
 	@echo "Copy binary into TA's project..."
 	@cp ./$(BIN_DIR)$(MAIN) ../hw4_ta/
