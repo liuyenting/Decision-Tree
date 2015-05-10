@@ -1,7 +1,7 @@
 SUBJECT = a1a
 EPSILON = 0
 
-OPTIMIZE = 0
+OPTIMIZE = 3
 
 # ====================
 # Envirnoment setup

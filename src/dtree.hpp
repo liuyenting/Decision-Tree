@@ -790,16 +790,7 @@ namespace dtree
 					*/
 				}
 
-				/*
-				// If every situation in this scenario leads to partially nulled nodes...
-				// ...discard this result.
-				if ((current->positive_child == NULL) || (current->negative_child == NULL))
-				{
-					delete current;
-					current = NULL;
-				}
-				*/
-
+				// If every situation in this scenario leads to partially nulled nodes, discard this result.
 				delete current;
 				current = NULL;
 			}
