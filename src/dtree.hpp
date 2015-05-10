@@ -783,7 +783,7 @@ namespace dtree
 		 * Generate if-else statement.
 		 */
 	public:
-		void generate_file(std::ofstream& stream)
+		void generate_file(std::ostream& stream)
 		{
 			stream << "int tree_predict(double *attr) {" << std::endl;
 			generate_file(stream, root, 1);
@@ -793,7 +793,7 @@ namespace dtree
 	private:
 
 #define INDENT "  "
-		void generate_file(std::ofstream& stream, node* leaf, int indent)
+		void generate_file(std::ostream& stream, node* leaf, int indent)
 		{
 			if ((leaf->positive_child == NULL) && (leaf->negative_child == NULL))
 			{
