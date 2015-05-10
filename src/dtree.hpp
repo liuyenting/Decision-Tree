@@ -592,6 +592,12 @@ namespace dtree
 			double threshold;
 			node* positive_child;
 			node* negative_child;
+
+			node()
+				: feature_index(-1), conclusion(1), threshold(-1.0), positive_child(NULL), negative_child(NULL)
+			{
+
+			}
 		};
 
 		/*
@@ -665,16 +671,11 @@ namespace dtree
 			if ((data.get_confusion() <= _epsilon) || !data.can_branch())
 			{
 				current->conclusion = data.get_conclusion();
-				current->positive_child = current->negative_child = NULL;
 			}
 			else
 			{
 				auto range = data.get_feature_range();
-				// oor-patch-2
-				/*
-				double least_confusion = 1, target_threshold = -1;
-				int target_index = -1;
-				*/
+
 				/*
 				 * (index, confusion, threshold)
 				 */
@@ -704,9 +705,9 @@ namespace dtree
 					}
 				}
 
-				#ifdef DEBUG
+#ifdef DEBUG
 				std::cerr << std::endl;
-				#endif
+#endif
 
 				std::sort(branches.begin(), branches.end(), [](std::tuple<int, double, double> const & t1, std::tuple<int, double, double> const & t2)
 				{
@@ -767,12 +768,29 @@ namespace dtree
 #endif
 
 					// Check whether next value needs to be tested
+					current->positive_child = predict(pos);
+					if (current->positive_child == NULL)
+					{
+						continue;
+					}
+
+					current->negative_child = predict(neg);
+					if (current->negative_child == NULL)
+					{
+						continue;
+					}
+
+					return current;
+
+					/*
 					if (((current->positive_child = predict(pos)) != NULL) && ((current->negative_child = predict(neg)) != NULL))
 					{
 						return current;
 					}
+					*/
 				}
 
+				/*
 				// If every situation in this scenario leads to partially nulled nodes...
 				// ...discard this result.
 				if ((current->positive_child == NULL) || (current->negative_child == NULL))
@@ -780,6 +798,10 @@ namespace dtree
 					delete current;
 					current = NULL;
 				}
+				*/
+
+				delete current;
+				current = NULL;
 			}
 
 			return current;
