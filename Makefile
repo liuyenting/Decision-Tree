@@ -1,4 +1,4 @@
-SUBJECT = htlin
+SUBJECT = a1a
 EPSILON = 0
 
 # ====================
@@ -13,7 +13,7 @@ BIN_DIR := bin/
 DAT_DIR := dat/
 
 #CXXFLAGS += -Wall -O3 -std=c++11 -fopenmp -DMMF
-CXXFLAGS += -Wall -O3 -std=c++11
+CXXFLAGS += -Wall -O0 -std=c++11
 
 # Create directories if not exist
 $(OBJ_DIR):

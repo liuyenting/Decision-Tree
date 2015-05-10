@@ -659,7 +659,6 @@ namespace dtree
 
 			if ((data.get_confusion() <= _epsilon) || !data.can_branch())
 			{
-				std::cerr << ">>> At leaf <<<" << std::endl;
 				current->conclusion = data.get_conclusion();
 				current->positive_child = current->negative_child = NULL;
 			}
