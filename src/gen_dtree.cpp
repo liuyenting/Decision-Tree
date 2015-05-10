@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 #ifdef DEBUG
 	std::cerr << ">>> Complete tree construction. <<<" << std::endl;
 	std::cerr << std::endl;
-	#endif
+#endif
 
 #ifdef IMPLICITLY_TO_FILE
 	std::ofstream output("tree_pred_func.cpp");

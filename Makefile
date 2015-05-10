@@ -12,8 +12,7 @@ OBJ_DIR := obj/
 BIN_DIR := bin/
 DAT_DIR := dat/
 
-#CXXFLAGS += -Wall -O3 -std=c++11 -fopenmp -DMMF
-CXXFLAGS += -Wall -O3 -std=c++11
+CXXFLAGS += -Wall -std=c++11 -O3 
 
 # Create directories if not exist
 $(OBJ_DIR):
@@ -46,12 +45,13 @@ endif
 
 all: clean build
 
-debug: CXXFLAGS += -DDEBUG -g3
+debug: CXXFLAGS := $(filter-out -O3, $(CXXFLAGS))
+debug: CXXFLAGS += -DDEBUG -O0 -g3
 debug: clean build
 	@mv $(BIN_DIR)$(MAIN) $(BIN_DIR)$(MAIN)_debug
 
 build: $(BIN_DIR) $(OBJ_DIR) $(MAIN)
-	@echo "Compile complete."
+	@echo "Compile complete. Built with CXXFLAGS = $(CXXFLAGS)"
 
 $(MAIN): $(OBJ_FILES)
 	@echo "Linking all the object files..."
