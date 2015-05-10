@@ -791,14 +791,11 @@ namespace dtree
 		}
 
 	private:
-
-#define INDENT "  "
+		const std::string INDENT = "  ";
 		void generate_file(std::ostream& stream, node* leaf, int indent)
 		{
 			if ((leaf->positive_child == NULL) && (leaf->negative_child == NULL))
 			{
-				std::cerr << "...leaf, conclusion=" << leaf->conclusion << std::endl;
-
 				for (int i = 0; i < indent; i++)
 				{
 					stream << INDENT;
@@ -817,8 +814,6 @@ namespace dtree
 			}
 			else
 			{
-				std::cerr << "indent=" << indent << "\t, index=" << leaf->feature_index << "\t, threshold=" << leaf->threshold << std::endl;
-
 				for (int i = 0; i < indent; i++)
 				{
 					stream << INDENT;
