@@ -1,6 +1,8 @@
 SUBJECT = a1a
 EPSILON = 0
 
+OPTIMIZE = 0
+
 # ====================
 # Envirnoment setup
 # ====================
@@ -12,7 +14,7 @@ OBJ_DIR := obj/
 BIN_DIR := bin/
 DAT_DIR := dat/
 
-CXXFLAGS += -Wall -std=c++11 -O3 
+CXXFLAGS += -Wall -std=c++11 -O$(OPTIMIZE)
 
 # Create directories if not exist
 $(OBJ_DIR):
@@ -45,7 +47,7 @@ endif
 
 all: clean build
 
-debug: CXXFLAGS := $(filter-out -O3, $(CXXFLAGS))
+debug: CXXFLAGS := $(filter-out -O$(OPTIMIZE), $(CXXFLAGS))
 debug: CXXFLAGS += -DDEBUG -O0 -g3
 debug: clean build
 	@mv $(BIN_DIR)$(MAIN) $(BIN_DIR)$(MAIN)_debug

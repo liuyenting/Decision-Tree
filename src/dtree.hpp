@@ -769,7 +769,7 @@ namespace dtree
 					// Check whether next value needs to be tested
 					if (((current->positive_child = predict(pos)) != NULL) && ((current->negative_child = predict(neg)) != NULL))
 					{
-						break;
+						return current;
 					}
 				}
 
@@ -778,8 +778,7 @@ namespace dtree
 				if ((current->positive_child == NULL) || (current->negative_child == NULL))
 				{
 					delete current;
-					//current = NULL;
-					return NULL;
+					current = NULL;
 				}
 			}
 
