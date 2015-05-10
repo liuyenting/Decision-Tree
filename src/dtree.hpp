@@ -703,7 +703,7 @@ namespace dtree
 						branches.push_back(std::make_tuple(i, std::get<0>(s), std::get<1>(s)));
 					}
 				}
-				
+
 				#ifdef DEBUG
 				std::cerr << std::endl;
 				#endif
@@ -778,7 +778,8 @@ namespace dtree
 				if ((current->positive_child == NULL) || (current->negative_child == NULL))
 				{
 					delete current;
-					current = NULL;
+					//current = NULL;
+					return NULL;
 				}
 			}
 
