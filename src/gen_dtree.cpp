@@ -14,19 +14,25 @@ int main(int argc, char *argv[])
 		showUsage(argv);
 	}
 
+#ifdef DEBUG
 	std::cerr << "Input from: \"" << argv[1] << "\"..." << std::endl;
+#endif
 
 	std::ifstream input(argv[1]);
 	dtree::dataset matrix(input);
 
+#ifdef DEBUG
 	std::cerr << "Review the rules" << std::endl;
 	std::cerr << matrix << std::endl;
+#endif
 
 	dtree::if_tree itree(matrix, std::stoi(argv[2]));
 	itree.predict();
 
+#ifdef DEBUG
 	std::cerr << ">>> Complete tree construction. <<<" << std::endl;
 	std::cerr << std::endl;
+	#endif
 
 #ifdef IMPLICITLY_TO_FILE
 	std::ofstream output("tree_pred_func.cpp");
