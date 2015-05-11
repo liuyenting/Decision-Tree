@@ -601,8 +601,7 @@ namespace dtree
 					std::cerr << "i=" << i << std::endl;
 #endif
 
-					auto sequences = data.get_thresholds_sequence(i);
-					for (const auto& s : sequences)
+					for (const auto& s : data.get_thresholds_sequence(i))
 					{
 #ifdef DEBUG
 						std::cerr << " -> confusion=" << std::get<0>(s) << ",\tthreshold=" << std::get<1>(s) << std::endl;
