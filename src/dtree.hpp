@@ -472,7 +472,6 @@ namespace dtree
 				double a = *itr, b;
 				if (++itr == values.end())
 				{
-					// oor-patch
 					if (a == 0)
 					{
 						thresholds.insert(0);
@@ -659,7 +658,6 @@ namespace dtree
 	private:
 		node* predict(dataset& data)
 		{
-			// oor-patch
 			// TODO: retraverse the tree using different branching method
 			if (std::isnan(data.get_confusion()))
 			{
@@ -773,7 +771,6 @@ namespace dtree
 					{
 						continue;
 					}
-
 					current->negative_child = predict(neg);
 					if (current->negative_child == NULL)
 					{
@@ -781,13 +778,6 @@ namespace dtree
 					}
 
 					return current;
-
-					/*
-					if (((current->positive_child = predict(pos)) != NULL) && ((current->negative_child = predict(neg)) != NULL))
-					{
-						return current;
-					}
-					*/
 				}
 
 				// If every situation in this scenario leads to partially nulled nodes, discard this result.
