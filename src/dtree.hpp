@@ -15,6 +15,8 @@
 #include <tuple>
 #include <algorithm>
 #include <ctime>
+#include <queue>
+
 
 namespace dtree
 {
@@ -446,6 +448,7 @@ namespace dtree
 		 */
 		std::vector<std::pair<double, double> > get_thresholds_sequence(int feature_index)
 		{
+			/*
 			std::set<double> values;
 			for (const auto& e : _data)
 			{
@@ -459,6 +462,24 @@ namespace dtree
 					values.insert(0);
 				}
 			}
+			*/
+
+			/*
+			 * (raw value, index)
+			 */
+			std::vector<std::pair<double, unsigned int> > values;
+			for (unsigned int index = 0; index < _data.size(); index++)
+			{
+				try
+				{
+					values.push_back(std::make_pair(_data[index].features.at(feature_index), index));
+				}
+				catch (std::out_of_range e)
+				{
+					// Default value as threshold.
+					values.push_back(std::make_pair(0, index));
+				}
+			}
 
 			if (values.size() == 0)
 			{
@@ -466,10 +487,26 @@ namespace dtree
 				std::exit(EXIT_FAILURE);
 			}
 
+			std::sort(values.begin(), values.end(), [](std::pair<double, int> const & t1, std::pair<double, int> const & t2)
+			{
+				// Compared using the raw value -> index, ascending
+				if (std::get<0>(t1) == std::get<0>(t2))
+				{
+					return std::get<1>(t1) < std::get<1>(t2);
+				}
+				else
+				{
+					return std::get<0>(t1) < std::get<0>(t2);
+				}
+			});
+
+			/*
+			 * (thresholds, pos_counts, neg_counts)
+			 */
 			std::set<double> thresholds;
 			for (auto itr = values.begin(); ;)
 			{
-				double a = *itr, b;
+				double a = itr->first, b;
 				if (++itr == values.end())
 				{
 					if (a == 0)
@@ -480,11 +517,52 @@ namespace dtree
 				}
 				else
 				{
-					b = *itr;
+					b = itr->first;
 					thresholds.insert((a + b) / 2);
 				}
 			}
 
+			auto counts = get_conclusion_counts();
+			int total_pos_counts = std::get<0>(counts), total_neg_counts = std::get<1>(counts);
+			int current_pos_counts = 0, current_neg_counts = 0;
+			int remain_pos_counts = 0, remain_neg_counts = 0;
+
+			std::vector<std::pair<double, double> > sequence;
+			unsigned int value_index;
+			for (const auto& threshold : thresholds)
+			{
+				for (value_index = 0;(std::get<0>(values[value_index]) <= threshold) && (value_index < values.size()); value_index++)
+				{
+					int entry_conclusion = _data[std::get<1>(values[value_index])].conclusion;
+					if (entry_conclusion > 0)
+					{
+						current_pos_counts++;
+					}
+					else if (entry_conclusion < 0)
+					{
+						current_neg_counts++;
+					}
+					else
+					{
+						throw std::domain_error("get_thresholds_sequence(): Undefined conclusion found during the estimation.");
+						std::exit(EXIT_FAILURE);
+					}
+				}
+
+				remain_pos_counts = total_pos_counts - current_pos_counts;
+				remain_neg_counts = total_neg_counts - current_neg_counts;
+
+				double pos_confusion = 1 - ((std::pow(remain_pos_counts, 2) + std::pow(remain_neg_counts, 2)) / std::pow((remain_pos_counts + remain_neg_counts), 2));
+				double neg_confusion = 1 - ((std::pow(current_pos_counts, 2) + std::pow(current_neg_counts, 2)) / std::pow((current_pos_counts + current_neg_counts), 2));
+
+				double tmp_confusion = (pos_confusion * (remain_pos_counts + remain_neg_counts) + neg_confusion * (current_pos_counts + current_neg_counts)) / _data.size();
+				if (!std::isnan(tmp_confusion))
+				{
+					sequence.push_back(std::make_pair(tmp_confusion, threshold));
+				}
+			}
+
+			/*
 			std::vector<std::pair<double, double> > sequence;
 			for (const auto& threshold : thresholds)
 			{
@@ -492,13 +570,13 @@ namespace dtree
 				double pos_confusion = positive_confusion(feature_index, threshold, pos_counts);
 				double neg_confusion = negative_confusion(feature_index, threshold, neg_counts);
 
-#ifdef DEBUG
+			#ifdef DEBUG
 				std::cerr << "////////////////////" << std::endl;
 				std::cerr << "pos_count=" << pos_counts << ", neg_count=" << neg_counts << std::endl;
 				std::cerr << "pos_confusion=" << pos_confusion << ", neg_confusion=" << neg_confusion << std::endl;
 				std::cerr << "data_size=" << _data.size() << std::endl;
 				std::cerr << "////////////////////" << std::endl;
-#endif
+			#endif
 
 				double tmp_confusion = (pos_confusion * pos_counts + neg_confusion * neg_counts) / _data.size();
 				if (!std::isnan(tmp_confusion))
@@ -506,6 +584,7 @@ namespace dtree
 					sequence.push_back(std::make_pair(tmp_confusion, threshold));
 				}
 			}
+			*/
 
 			return sequence;
 		}
