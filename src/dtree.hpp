@@ -830,16 +830,19 @@ namespace dtree
 		}
 
 	private:
-		const std::string INDENT = "  ";
+		const std::string indent_character = "  ";
 		void generate_file(std::ostream& stream, node* leaf, int indent)
 		{
+			std::string indentations = "";
+			for (int i = 0; i < indent; i++)
+			{
+				indentations += indent_character;
+			}
+
 			if ((leaf->positive_child == NULL) && (leaf->negative_child == NULL))
 			{
-				for (int i = 0; i < indent; i++)
-				{
-					stream << INDENT;
-				}
-				stream << "return " << leaf->conclusion << ';' << std::endl;
+
+				stream << indentations << "return " << leaf->conclusion << ';' << std::endl;
 			}
 			else if (leaf->positive_child == NULL)
 			{
@@ -853,23 +856,11 @@ namespace dtree
 			}
 			else
 			{
-				for (int i = 0; i < indent; i++)
-				{
-					stream << INDENT;
-				}
-				stream << "if(attr[" << leaf->feature_index << "] > " << leaf->threshold << ") {" << std::endl;
+				stream << indentations << "if(attr[" << leaf->feature_index << "] > " << leaf->threshold << ") {" << std::endl;
 				generate_file(stream, leaf->positive_child, indent + 1);
-				for (int i = 0; i < indent; i++)
-				{
-					stream << INDENT;
-				}
-				stream << "} else {" << std::endl;
+				stream << indentations << "} else {" << std::endl;
 				generate_file(stream, leaf->negative_child, indent + 1);
-				for (int i = 0; i < indent; i++)
-				{
-					stream << INDENT;
-				}
-				stream << '}' << std::endl;
+				stream << indentations << '}' << std::endl;
 			}
 		}
 	};
