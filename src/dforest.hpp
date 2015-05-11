@@ -85,7 +85,7 @@ namespace dforest
 			// Generate the trees.
 			for (int i = 0; i < _tree_counts; i++)
 			{
-				_forest[i]->generate_file(stream, i);
+				_forest[i]->generate_file(stream, (i + 1));
 				stream << std::endl;
 			}
 
@@ -94,8 +94,8 @@ namespace dforest
 			stream << indent_character << "int votes = 0;" << std::endl;
 			for (int i = 0; i < _tree_counts; i++)
 			{
-				stream << "tree" << i << "_predict:" << std::endl;
-				stream << indent_character << "votes += " << "tree" << i << "_predict(attr);" << std::endl;
+				stream << "tree" << (i + 1) << "_predict:" << std::endl;
+				stream << indent_character << "votes += " << "tree" << (i + 1) << "_predict(attr);" << std::endl;
 			}
 			stream << "voting:" << std::endl;
 			stream << indent_character << "if (votes > 0)" << std::endl;
