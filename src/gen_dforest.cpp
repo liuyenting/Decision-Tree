@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <fstream>
 
-#include "dtree.hpp"
+#include "dforest.hpp"
 
 void showUsage(char *argv[]);
 
@@ -26,20 +26,22 @@ int main(int argc, char *argv[])
 	std::cerr << matrix << std::endl;
 #endif
 
-	dtree::if_tree itree(matrix, std::stoi(argv[2]));
-	itree.predict();
+	dforest::if_forest iforest(matrix, std::stoi(argv[2]));
+
+	iforest.regenerate();
+	iforest.predict();
 
 #ifdef DEBUG
-	std::cerr << ">>> Complete tree construction. <<<" << std::endl;
+	std::cerr << ">>> Complete forest construction. <<<" << std::endl;
 	std::cerr << std::endl;
 #endif
 
 #ifdef IMPLICITLY_TO_FILE
-	std::ofstream output("tree_pred_func.cpp");
-	itree.generate_file(output);
+	std::ofstream output("forest_pred_func.cpp");
+	iforest.generate_file(output);
 	output.close();
 #else
-	itree.generate_file(std::cout);
+	iforest.generate_file(std::cout);
 #endif
 
 	return EXIT_SUCCESS;
@@ -47,6 +49,6 @@ int main(int argc, char *argv[])
 
 void showUsage(char *argv[])
 {
-	std::cout << "Usage: " << argv[0] << " filename" << " epsilon" << std::endl;
+	std::cout << "Usage: " << argv[0] << " filename" << " trees" << std::endl;
 	std::exit(EXIT_FAILURE);
 }
