@@ -51,7 +51,13 @@ namespace dforest
 		 */
 		void regenerate()
 		{
+			_forest.clear();
+			_forest.reserve(_tree_counts);
 
+			for(int i = 0; i < _tree_counts; i++)
+			{
+				dtree::if_tree tmp_itree(matrix, 0);
+			}
 		}
 
 		/*
@@ -72,7 +78,7 @@ namespace dforest
 			generate_file(stream, _root, 1);
 			stream << '}' << std::endl;
 		}
-		
+
 	private:
 	};
 }

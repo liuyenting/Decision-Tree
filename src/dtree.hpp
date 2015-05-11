@@ -411,6 +411,22 @@ namespace dtree
 		}
 
 		/*
+		 * Get shuffled partial result.
+		 */
+	public:
+		dataset get_partial()
+		{
+			return get_partial(1);
+		}
+
+		dataset get_partial(const int& parted)
+		{
+			std::vector<entry> partial_contianer(_data.begin(), _data.begin() + _data.size() / parted);
+			dataset partial_set = partial_contianer;
+			return partial_set;
+		}
+
+		/*
 		 * Operator overloads.
 		 */
 	public:
