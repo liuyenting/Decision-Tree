@@ -13,20 +13,20 @@ namespace dforest
 		 * Data related private variables.
 		 */
 	private:
-		dataset _data;
+		dtree::dataset _data;
 		int _tree_counts;
 
 		/*
 		 * Trees
 		 */
 	private:
-		std::vector<dtree::if_tree> _forest;
+		std::vector<dtree::if_tree*> _forest;
 
 		/*
 		 * Constructors
 		 */
 	public:
-		if_forest(const dataset& data, const int& tree_counts)
+		if_forest(const dtree::dataset& data, const int& tree_counts)
 			: _data(data), _tree_counts(tree_counts)
 		{
 		}
@@ -41,7 +41,7 @@ namespace dforest
 		{
 			for (auto& tree : _forest)
 			{
-				tree.destroy_tree();
+				tree->destroy_tree();
 			}
 		}
 
@@ -54,9 +54,10 @@ namespace dforest
 			_forest.clear();
 			_forest.reserve(_tree_counts);
 
-			for(int i = 0; i < _tree_counts; i++)
+			for (int i = 0; i < _tree_counts; i++)
 			{
-				dtree::if_tree tmp_itree(matrix, 0);
+				dtree::if_tree* tmp_itree = new dtree::if_tree(_data.get_partial_data(3), 0);
+				_forest.push_back(tmp_itree);
 			}
 		}
 
@@ -65,21 +66,48 @@ namespace dforest
 		 */
 		void predict()
 		{
-
+			for (auto& t : _forest)
+			{
+				t->predict();
+			}
 		}
 
 		/*
 		 * Generate if-else statement.
 		 */
 	public:
+		const std::string indent_character = "  ";
 		void generate_file(std::ostream& stream)
 		{
-			stream << "int tree_predict(double *attr) {" << std::endl;
-			generate_file(stream, _root, 1);
+			stream << "#include <cstdlib>" << std::endl;
+			stream << "#include <ctime>" << std::endl;
+
+			// Generate the trees.
+			for (int i = 0; i < _tree_counts; i++)
+			{
+				_forest[i]->generate_file(stream, i);
+				stream << std::endl;
+			}
+
+			// Major forest body.
+			stream << "int forest_predict(double *attr) {" << std::endl;
+			stream << indent_character << "int votes = 0;" << std::endl;
+			for (int i = 0; i < _tree_counts; i++)
+			{
+				stream << "tree" << i << "_predict:" << std::endl;
+				stream << indent_character << "votes += " << "tree" << i << "_predict(attr);" << std::endl;
+			}
+			stream << "voting:" << std::endl;
+			stream << indent_character << "if (votes > 0)" << std::endl;
+			stream << indent_character << indent_character << "return 1;" << std::endl;
+			stream << indent_character << "else if (votes < 0)" << std::endl;
+			stream << indent_character << indent_character << "return -1;" << std::endl;
+			stream << indent_character << "else {" << std::endl;
+			stream << indent_character << indent_character << "std::srand(std::time(0));" << std::endl;
+			stream << indent_character << indent_character << "return ((std::rand() % 2) ? 1 : -1);" << std::endl;
+			stream << indent_character << '}' << std::endl;
 			stream << '}' << std::endl;
 		}
-
-	private:
 	};
 }
 

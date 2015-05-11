@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <ctime>
 #include <queue>
+#include <random>
 
 
 namespace dtree
@@ -411,22 +412,6 @@ namespace dtree
 		}
 
 		/*
-		 * Get shuffled partial result.
-		 */
-	public:
-		dataset get_partial()
-		{
-			return get_partial(1);
-		}
-
-		dataset get_partial(const int& parted)
-		{
-			std::vector<entry> partial_contianer(_data.begin(), _data.begin() + _data.size() / parted);
-			dataset partial_set = partial_contianer;
-			return partial_set;
-		}
-
-		/*
 		 * Operator overloads.
 		 */
 	public:
@@ -496,6 +481,23 @@ namespace dtree
 				throw std::out_of_range("operator[]: Feature index out-of-bound.");
 				std::exit(EXIT_FAILURE);
 			}
+		}
+
+		/*
+		 * Get shuffled partial result.
+		 */
+	public:
+		dataset get_partial_data(const int& parted)
+		{
+			std::random_device rd;
+			std::mt19937 g(rd());
+
+			std::shuffle(_data.begin(), _data.end(), g);
+
+			std::vector<entry> partial_container(_data.begin(), _data.begin() + _data.size() / parted);
+			dataset partial_set;
+			partial_set = partial_container;
+			return partial_set;
 		}
 	};
 
@@ -698,6 +700,13 @@ namespace dtree
 		void generate_file(std::ostream& stream)
 		{
 			stream << "int tree_predict(double *attr) {" << std::endl;
+			generate_file(stream, _root, 1);
+			stream << '}' << std::endl;
+		}
+
+		void generate_file(std::ostream& stream, const int& tree_id)
+		{
+			stream << "int tree" << tree_id << "_predict(double *attr) {" << std::endl;
 			generate_file(stream, _root, 1);
 			stream << '}' << std::endl;
 		}
