@@ -170,13 +170,6 @@ namespace dtree
 				auto itr = _data.begin();
 				for (++itr; itr != _data.end(); ++itr)
 				{
-					/*
-					if (!map_compare(_data[0].features, itr->features))
-					{
-						return true;
-					}
-					*/
-
 					if (_data[0].features != itr->features)
 					{
 						return true;
@@ -412,7 +405,6 @@ namespace dtree
 				double tmp_confusion = (pos_confusion * (remain_pos_counts + remain_neg_counts) + neg_confusion * (current_pos_counts + current_neg_counts)) / _data.size();
 				if (!std::isnan(tmp_confusion))
 				{
-					//sequences.push_back(std::make_tuple(tmp_confusion, threshold, feature_index));
 					sequences.insert(std::make_tuple(tmp_confusion, threshold, feature_index));
 				}
 			}
@@ -602,8 +594,6 @@ namespace dtree
 				std::cerr << std::endl;
 #endif
 
-				//std::sort(branches.begin(), branches.end());
-
 				for (const auto& branch : branches)
 				{
 					current->feature_index = std::get<2>(branch);
@@ -732,6 +722,5 @@ namespace dtree
 		}
 	};
 }
-
 
 #endif
