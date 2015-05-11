@@ -176,7 +176,7 @@ namespace dtree
 						return true;
 					}
 					*/
-					
+
 					if (_data[0].features != itr->features)
 					{
 						return true;
@@ -363,18 +363,7 @@ namespace dtree
 				std::exit(EXIT_FAILURE);
 			}
 
-			std::sort(values.begin(), values.end(), [](const std::pair<double, int>& t1, const std::pair<double, int>& t2)
-			{
-				// Compared using the raw value -> index, ascending
-				if (std::get<0>(t1) == std::get<0>(t2))
-				{
-					return std::get<1>(t1) < std::get<1>(t2);
-				}
-				else
-				{
-					return std::get<0>(t1) < std::get<0>(t2);
-				}
-			});
+			std::sort(values.begin(), values.end());
 
 			auto counts = get_conclusion_counts();
 			int current_pos_counts = 0, current_neg_counts = 0;
