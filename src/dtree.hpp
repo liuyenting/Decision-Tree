@@ -328,7 +328,7 @@ namespace dtree
 		 * Parameter: target index, sequences (conusion, threshold, int)
 		 * Return: none
 		 */
-		void generate_subbranches(int feature_index, std::vector<std::tuple<double, double, int> >& sequences)
+		void generate_subbranches(int feature_index, std::set<std::tuple<double, double, int> >& sequences)
 		{
 			/*
 			 * (raw value, index)
@@ -412,7 +412,8 @@ namespace dtree
 				double tmp_confusion = (pos_confusion * (remain_pos_counts + remain_neg_counts) + neg_confusion * (current_pos_counts + current_neg_counts)) / _data.size();
 				if (!std::isnan(tmp_confusion))
 				{
-					sequences.push_back(std::make_tuple(tmp_confusion, threshold, feature_index));
+					//sequences.push_back(std::make_tuple(tmp_confusion, threshold, feature_index));
+					sequences.insert(std::make_tuple(tmp_confusion, threshold, feature_index));
 				}
 			}
 		}
@@ -584,7 +585,7 @@ namespace dtree
 				/*
 				 * (confusion, threshold, index)
 				 */
-				std::vector<std::tuple<double, double, int> > branches;
+				std::set<std::tuple<double, double, int> > branches;
 
 #ifdef DEBUG
 				std::cerr << "********************" << std::endl;
@@ -594,10 +595,6 @@ namespace dtree
 
 				for (int i = range.min; i <= range.max; i++)
 				{
-#ifdef DEBUG
-					std::cerr << "i=" << i << std::endl;
-#endif
-					
 					data.generate_subbranches(i, branches);
 				}
 
@@ -605,7 +602,7 @@ namespace dtree
 				std::cerr << std::endl;
 #endif
 
-				std::sort(branches.begin(), branches.end());
+				//std::sort(branches.begin(), branches.end());
 
 				for (const auto& branch : branches)
 				{
