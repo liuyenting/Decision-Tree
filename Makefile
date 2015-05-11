@@ -48,7 +48,7 @@ endif
 all: clean build
 
 debug: CXXFLAGS := $(filter-out -O$(OPTIMIZE), $(CXXFLAGS))
-debug: CXXFLAGS += -DDEBUG -O0 -g3
+debug: CXXFLAGS += -DDEBUG -O0 -g3 -pg
 debug: clean build
 	@mv $(BIN_DIR)$(MAIN) $(BIN_DIR)$(MAIN)_debug
 
