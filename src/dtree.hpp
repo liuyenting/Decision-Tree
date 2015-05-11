@@ -585,7 +585,7 @@ namespace dtree
 				auto range = data.get_feature_range();
 
 				/*
-				 * (index, confusion, threshold)
+				 * (confusion, threshold, index)
 				 */
 				std::vector<std::tuple<int, double, double> > branches;
 
@@ -607,7 +607,7 @@ namespace dtree
 						std::cerr << " -> confusion=" << std::get<0>(s) << ",\tthreshold=" << std::get<1>(s) << std::endl;
 #endif
 
-						branches.push_back(std::make_tuple(i, std::get<0>(s), std::get<1>(s)));
+						branches.push_back(std::make_tuple(std::get<0>(s), std::get<1>(s), i));
 					}
 				}
 
@@ -615,25 +615,7 @@ namespace dtree
 				std::cerr << std::endl;
 #endif
 
-				std::sort(branches.begin(), branches.end(), [](std::tuple<int, double, double> const & t1, std::tuple<int, double, double> const & t2)
-				{
-					// Compared using the confusion -> threshold -> index, ascending
-					if (std::get<1>(t1) == std::get<1>(t2))
-					{
-						if (std::get<0>(t1) == std::get<0>(t2))
-						{
-							return std::get<2>(t1) < std::get<2>(t2);
-						}
-						else
-						{
-							return std::get<0>(t1) < std::get<0>(t2);
-						}
-					}
-					else
-					{
-						return std::get<1>(t1) < std::get<1>(t2);
-					}
-				});
+				std::sort(branches.begin(), branches.end());
 
 				for (const auto& branch : branches)
 				{
