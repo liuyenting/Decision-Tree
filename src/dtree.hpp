@@ -325,10 +325,10 @@ namespace dtree
 
 	public:
 		/*
-		 * Parameter: target index
-		 * Return: (confusion, threshold, int)
+		 * Parameter: target index, sequences (conusion, threshold, int)
+		 * Return: none
 		 */
-		std::vector<std::tuple<double, double, int> > get_thresholds_sequence(int feature_index)
+		void generate_subbranches(int feature_index, std::vector<std::tuple<double, double, int> >& sequences)
 		{
 			/*
 			 * (raw value, index)
@@ -351,7 +351,7 @@ namespace dtree
 				catch (std::out_of_range e)
 				{
 					std::stringstream stream;
-					stream << "get_thresholds_sequence(): Invalid feature index \"" << index << "\".";
+					stream << "generate_subbranches(): Invalid feature index \"" << index << "\".";
 					throw std::out_of_range(stream.str());
 					std::exit(EXIT_FAILURE);
 				}
@@ -359,7 +359,7 @@ namespace dtree
 
 			if (values.size() == 0)
 			{
-				throw std::runtime_error("get_thresholds_sequence(): No values in the set to build the threshold table.");
+				throw std::runtime_error("generate_subbranches(): No values in the set to build the threshold table.");
 				std::exit(EXIT_FAILURE);
 			}
 
@@ -369,7 +369,6 @@ namespace dtree
 			int current_pos_counts = 0, current_neg_counts = 0;
 			int remain_pos_counts = std::get<0>(counts), remain_neg_counts = std::get<1>(counts);
 
-			std::vector<std::tuple<double, double, int> > sequence;
 			unsigned int value_index = 0;
 			for (auto itr = values.begin(); itr != values.end();)
 			{
@@ -402,7 +401,7 @@ namespace dtree
 					}
 					else
 					{
-						throw std::domain_error("get_thresholds_sequence(): Undefined conclusion found during the estimation.");
+						throw std::domain_error("generate_subbranches(): Undefined conclusion found during the estimation.");
 						std::exit(EXIT_FAILURE);
 					}
 				}
@@ -413,11 +412,9 @@ namespace dtree
 				double tmp_confusion = (pos_confusion * (remain_pos_counts + remain_neg_counts) + neg_confusion * (current_pos_counts + current_neg_counts)) / _data.size();
 				if (!std::isnan(tmp_confusion))
 				{
-					sequence.push_back(std::make_tuple(tmp_confusion, threshold, feature_index));
+					sequences.push_back(std::make_tuple(tmp_confusion, threshold, feature_index));
 				}
 			}
-
-			return sequence;
 		}
 
 		/*
@@ -600,21 +597,8 @@ namespace dtree
 #ifdef DEBUG
 					std::cerr << "i=" << i << std::endl;
 #endif
-
-					/*
-					for (const auto& s : data.get_thresholds_sequence(i))
-					{
-					#ifdef DEBUG
-						std::cerr << " -> confusion=" << std::get<0>(s) << ",\tthreshold=" << std::get<1>(s) << std::endl;
-					#endif
-
-						branches.push_back(std::make_tuple(std::get<0>(s), std::get<1>(s), i));
-					}
-					*/
-
-					auto tmp_branches = data.get_thresholds_sequence(i);
-					branches.reserve(branches.size() + tmp_branches.size());
-					branches.insert(branches.end(), tmp_branches.begin(), tmp_branches.end());
+					
+					data.generate_subbranches(i, branches);
 				}
 
 #ifdef DEBUG
