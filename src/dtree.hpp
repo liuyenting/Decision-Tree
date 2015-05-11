@@ -51,7 +51,7 @@ namespace dtree
 
 	private:
 		std::vector<entry> _data;
-		double confusion;
+		double _confusion;
 		range _feature_range;
 		/*
 		 * Constructors
@@ -145,7 +145,7 @@ namespace dtree
 				}
 			}
 
-			confusion = 1 - std::pow((pos_counts / (double)_data.size()), 2) - std::pow((neg_counts / (double)_data.size()), 2);
+			_confusion = 1 - std::pow((pos_counts / (double)_data.size()), 2) - std::pow((neg_counts / (double)_data.size()), 2);
 		}
 
 		// > threshold
@@ -308,7 +308,7 @@ namespace dtree
 
 		double get_confusion() const
 		{
-			return confusion;
+			return _confusion;
 		}
 
 		std::pair<int, int> get_conclusion_counts() const
@@ -521,7 +521,7 @@ namespace dtree
 		friend std::ostream& operator<<(std::ostream & stream, dataset & d)
 		{
 #ifdef DEBUG
-			std::cerr << "confusion = " << std::fixed << std::setprecision(6) << d.confusion;
+			std::cerr << "confusion = " << std::fixed << std::setprecision(6) << d._confusion;
 #endif
 
 			for (auto itr = d._data.begin(); itr != d._data.end(); ++itr)
@@ -542,7 +542,7 @@ namespace dtree
 		 */
 		bool operator<=(const double & epsilon)
 		{
-			return confusion <= epsilon;
+			return _confusion <= epsilon;
 		}
 
 		/*
@@ -561,7 +561,7 @@ namespace dtree
 		dataset& operator=(const dataset & rhs)
 		{
 			_data = rhs._data;
-			confusion = rhs.confusion;
+			_confusion = rhs._confusion;
 			_feature_range = rhs._feature_range;
 
 			return *this;
