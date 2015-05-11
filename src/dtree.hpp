@@ -587,7 +587,7 @@ namespace dtree
 				/*
 				 * (confusion, threshold, index)
 				 */
-				std::vector<std::tuple<int, double, double> > branches;
+				std::vector<std::tuple<double, double, int> > branches;
 
 #ifdef DEBUG
 				std::cerr << "********************" << std::endl;
@@ -619,8 +619,8 @@ namespace dtree
 
 				for (const auto& branch : branches)
 				{
-					current->feature_index = std::get<0>(branch);
-					current->threshold = std::get<2>(branch);
+					current->feature_index = std::get<2>(branch);
+					current->threshold = std::get<1>(branch);
 
 #ifdef DEBUG
 					std::cerr << "Separate the dataset using feature \"" << current->feature_index << "\"" << std::endl;
@@ -631,7 +631,7 @@ namespace dtree
 
 					// TODO: Add back for least_confusion tracking.
 #ifdef DEBUG
-					std::cerr << "confusion=" << std::get<1>(branch) << " at threshold=" << current->threshold << std::endl;
+					std::cerr << "confusion=" << std::get<0>(branch) << " at threshold=" << current->threshold << std::endl;
 					std::cerr << std::endl;
 #endif
 
