@@ -170,7 +170,14 @@ namespace dtree
 				auto itr = _data.begin();
 				for (++itr; itr != _data.end(); ++itr)
 				{
+					/*
 					if (!map_compare(_data[0].features, itr->features))
+					{
+						return true;
+					}
+					*/
+					
+					if (_data[0].features != itr->features)
 					{
 						return true;
 					}
@@ -370,9 +377,8 @@ namespace dtree
 			});
 
 			auto counts = get_conclusion_counts();
-			int total_pos_counts = std::get<0>(counts), total_neg_counts = std::get<1>(counts);
 			int current_pos_counts = 0, current_neg_counts = 0;
-			int remain_pos_counts = 0, remain_neg_counts = 0;
+			int remain_pos_counts = std::get<0>(counts), remain_neg_counts = std::get<1>(counts);
 
 			std::vector<std::pair<double, double> > sequence;
 			unsigned int value_index = 0;
@@ -398,10 +404,12 @@ namespace dtree
 					if (entry_conclusion > 0)
 					{
 						current_pos_counts++;
+						remain_pos_counts--;
 					}
 					else if (entry_conclusion < 0)
 					{
 						current_neg_counts++;
+						remain_neg_counts--;
 					}
 					else
 					{
@@ -409,9 +417,6 @@ namespace dtree
 						std::exit(EXIT_FAILURE);
 					}
 				}
-
-				remain_pos_counts = total_pos_counts - current_pos_counts;
-				remain_neg_counts = total_neg_counts - current_neg_counts;
 
 				double pos_confusion = 1 - ((std::pow(remain_pos_counts, 2) + std::pow(remain_neg_counts, 2)) / std::pow((remain_pos_counts + remain_neg_counts), 2));
 				double neg_confusion = 1 - ((std::pow(current_pos_counts, 2) + std::pow(current_neg_counts, 2)) / std::pow((current_pos_counts + current_neg_counts), 2));
@@ -603,13 +608,11 @@ namespace dtree
 
 				for (int i = range.min; i <= range.max; i++)
 				{
-					auto sequence = data.get_thresholds_sequence(i);
-
 #ifdef DEBUG
 					std::cerr << "i=" << i << std::endl;
 #endif
 
-					for (const auto& s : sequence)
+					for (const auto& s : data.get_thresholds_sequence(i))
 					{
 #ifdef DEBUG
 						std::cerr << " -> confusion=" << std::get<0>(s) << ",\tthreshold=" << std::get<1>(s) << std::endl;
