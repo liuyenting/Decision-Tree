@@ -611,7 +611,7 @@ namespace dtree
 		 * Tree related private variables.
 		 */
 	private:
-		node* root;
+		node* _root;
 
 		/*
 		 * Constructors and destructors
@@ -647,9 +647,9 @@ namespace dtree
 	public:
 		void predict()
 		{
-			root = predict(_data);
+			_root = predict(_data);
 
-			if (root == NULL)
+			if (_root == NULL)
 			{
 				throw std::runtime_error("predict(): No solution.");
 				std::exit(EXIT_FAILURE);
@@ -804,7 +804,7 @@ namespace dtree
 	public:
 		void destroy_tree()
 		{
-			destroy_tree(root);
+			destroy_tree(_root);
 		}
 
 	private:
@@ -825,7 +825,7 @@ namespace dtree
 		void generate_file(std::ostream& stream)
 		{
 			stream << "int tree_predict(double *attr) {" << std::endl;
-			generate_file(stream, root, 1);
+			generate_file(stream, _root, 1);
 			stream << '}' << std::endl;
 		}
 
