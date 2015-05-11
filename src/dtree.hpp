@@ -326,9 +326,9 @@ namespace dtree
 	public:
 		/*
 		 * Parameter: target index
-		 * Return: (confusion, threshold)
+		 * Return: (confusion, threshold, int)
 		 */
-		std::vector<std::pair<double, double> > get_thresholds_sequence(int feature_index)
+		std::vector<std::tuple<double, double, int> > get_thresholds_sequence(int feature_index)
 		{
 			/*
 			 * (raw value, index)
@@ -369,7 +369,7 @@ namespace dtree
 			int current_pos_counts = 0, current_neg_counts = 0;
 			int remain_pos_counts = std::get<0>(counts), remain_neg_counts = std::get<1>(counts);
 
-			std::vector<std::pair<double, double> > sequence;
+			std::vector<std::tuple<double, double, int> > sequence;
 			unsigned int value_index = 0;
 			for (auto itr = values.begin(); itr != values.end();)
 			{
@@ -413,7 +413,7 @@ namespace dtree
 				double tmp_confusion = (pos_confusion * (remain_pos_counts + remain_neg_counts) + neg_confusion * (current_pos_counts + current_neg_counts)) / _data.size();
 				if (!std::isnan(tmp_confusion))
 				{
-					sequence.push_back(std::make_pair(tmp_confusion, threshold));
+					sequence.push_back(std::make_tuple(tmp_confusion, threshold, feature_index));
 				}
 			}
 
@@ -601,14 +601,20 @@ namespace dtree
 					std::cerr << "i=" << i << std::endl;
 #endif
 
+					/*
 					for (const auto& s : data.get_thresholds_sequence(i))
 					{
-#ifdef DEBUG
+					#ifdef DEBUG
 						std::cerr << " -> confusion=" << std::get<0>(s) << ",\tthreshold=" << std::get<1>(s) << std::endl;
-#endif
+					#endif
 
 						branches.push_back(std::make_tuple(std::get<0>(s), std::get<1>(s), i));
 					}
+					*/
+
+					auto tmp_branches = data.get_thresholds_sequence(i);
+					branches.reserve(branches.size() + tmp_branches.size());
+					branches.insert(branches.end(), tmp_branches.begin(), tmp_branches.end());
 				}
 
 #ifdef DEBUG
