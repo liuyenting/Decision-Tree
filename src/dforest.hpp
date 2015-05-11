@@ -81,6 +81,7 @@ namespace dforest
 		{
 			stream << "#include <cstdlib>" << std::endl;
 			stream << "#include <ctime>" << std::endl;
+			stream << std::endl;
 
 			// Generate the trees.
 			for (int i = 0; i < _tree_counts; i++)
