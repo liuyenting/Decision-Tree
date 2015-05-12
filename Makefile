@@ -1,4 +1,4 @@
-SUBJECT = graph
+SUBJECT = heart
 EPSILON = 0
 TREES	= 10
 
