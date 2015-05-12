@@ -363,7 +363,8 @@ namespace dtree
 			int current_pos_counts = 0, current_neg_counts = 0;
 			int remain_pos_counts = std::get<0>(counts), remain_neg_counts = std::get<1>(counts);
 
-			unsigned int value_index = 0, old_threshold = -1;
+			unsigned int value_index = 0;
+			double old_threshold = -1;
 			for (auto itr = values.begin(); itr != values.end();)
 			{
 				double a = itr->first, b, threshold;
