@@ -1,4 +1,4 @@
-SUBJECT = heart
+SUBJECT = a4a
 EPSILON = 0
 TREES	= 10
 
